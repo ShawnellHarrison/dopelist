@@ -36,7 +36,24 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const { sessionId, postData } = await req.json();
+    const { postId, sessionId } = await req.json();
+
+    const { data: post, error: postError } = await supabase
+      .from('posts')
+      .select('*')
+      .eq('id', postId)
+      .eq('user_id', user.id)
+      .single();
+
+    if (postError || !post) {
+      return new Response(
+        JSON.stringify({ error: 'Post not found or unauthorized' }),
+        {
+          status: 404,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
 
     let paymentIntentId = sessionId;
 
@@ -60,33 +77,22 @@ Deno.serve(async (req: Request) => {
       paymentIntentId = session.payment_intent as string;
     }
 
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7);
+    const newExpiresAt = new Date();
+    newExpiresAt.setDate(newExpiresAt.getDate() + 7);
 
-    const { data: post, error } = await supabase
+    const { data: updatedPost, error: updateError } = await supabase
       .from('posts')
-      .insert({
-        user_id: user.id,
-        city_id: postData.cityId,
-        category_id: postData.categoryId,
-        title: postData.title,
-        description: postData.description,
-        price: postData.price || null,
-        location: postData.location,
-        images: postData.images || [],
-        contact_email: postData.contactEmail || null,
-        stripe_payment_id: paymentIntentId,
-        votes: 0,
-        reactions: { hot: 0, interested: 0, watching: 0, question: 0, deal: 0 },
-        expires_at: expiresAt.toISOString(),
+      .update({
+        expires_at: newExpiresAt.toISOString(),
         is_active: true,
       })
+      .eq('id', postId)
       .select()
       .single();
 
-    if (error) {
+    if (updateError) {
       return new Response(
-        JSON.stringify({ error: error.message }),
+        JSON.stringify({ error: updateError.message }),
         {
           status: 500,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -95,7 +101,7 @@ Deno.serve(async (req: Request) => {
     }
 
     return new Response(
-      JSON.stringify({ post }),
+      JSON.stringify({ post: updatedPost }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }

@@ -12,11 +12,12 @@ interface PostModalProps {
   categories: Category[];
   onPostCreated: () => void;
   onShowUpgradePrompt: () => void;
+  sessionId: string | null;
 }
 
-export function PostModal({ open, onClose, city, categories, onPostCreated, onShowUpgradePrompt }: PostModalProps) {
+export function PostModal({ open, onClose, city, categories, onPostCreated, onShowUpgradePrompt, sessionId }: PostModalProps) {
   const { user } = useAuth();
-  const [step, setStep] = useState<'form' | 'payment' | 'processing'>('form');
+  const [step, setStep] = useState<'payment' | 'form' | 'processing'>('payment');
   const [categoryId, setCategoryId] = useState('');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -25,6 +26,7 @@ export function PostModal({ open, onClose, city, categories, onPostCreated, onSh
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [checkingPayment, setCheckingPayment] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -34,8 +36,16 @@ export function PostModal({ open, onClose, city, categories, onPostCreated, onSh
   }, [open, categories, categoryId]);
 
   useEffect(() => {
-    if (!open) {
+    if (open && sessionId) {
       setStep('form');
+    } else if (open) {
+      setStep('payment');
+    }
+  }, [open, sessionId]);
+
+  useEffect(() => {
+    if (!open) {
+      setStep(sessionId ? 'form' : 'payment');
       setTitle('');
       setDescription('');
       setPrice('');
@@ -45,7 +55,7 @@ export function PostModal({ open, onClose, city, categories, onPostCreated, onSh
       setImagePreviews([]);
       if (categories.length > 0) setCategoryId(categories[0].id);
     }
-  }, [open, categories]);
+  }, [open, categories, sessionId]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []).slice(0, MAX_IMAGES);
@@ -60,12 +70,48 @@ export function PostModal({ open, onClose, city, categories, onPostCreated, onSh
     setImagePreviews((prev) => prev.filter((_, i) => i !== idx));
   };
 
-  const handleContinue = () => {
-    if (!title || !description || !location || !categoryId) {
-      alert('Please fill in all required fields');
-      return;
+  const handleStartPayment = async () => {
+    if (!user || !supabase || !city) return;
+
+    try {
+      setCheckingPayment(true);
+
+      const apiUrl = `${getSupabaseUrl()}/functions/v1/create-post-checkout`;
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          cityId: city.id,
+          returnUrl: window.location.href,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.demo) {
+        const demoSessionId = 'demo_' + Date.now();
+        const url = new URL(window.location.href);
+        url.searchParams.set('session_id', demoSessionId);
+        window.location.href = url.toString();
+        return;
+      }
+
+      if (data.error) {
+        alert(data.error);
+        return;
+      }
+
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch (error: any) {
+      alert(error.message || 'Payment failed');
+    } finally {
+      setCheckingPayment(false);
     }
-    setStep('payment');
   };
 
   const uploadImages = async (): Promise<string[]> => {
@@ -90,8 +136,13 @@ export function PostModal({ open, onClose, city, categories, onPostCreated, onSh
     return uploadedUrls;
   };
 
-  const handleDemoPayment = async () => {
-    if (!user || !supabase || !city) return;
+  const handleSubmitPost = async () => {
+    if (!user || !supabase || !city || !sessionId) return;
+
+    if (!title || !description || !location || !categoryId) {
+      alert('Please fill in all required fields');
+      return;
+    }
 
     try {
       setUploading(true);
@@ -99,26 +150,38 @@ export function PostModal({ open, onClose, city, categories, onPostCreated, onSh
 
       const imageUrls = await uploadImages();
 
-      const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 7);
+      const apiUrl = `${getSupabaseUrl()}/functions/v1/verify-payment-create-post`;
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          sessionId,
+          postData: {
+            cityId: city.id,
+            categoryId,
+            title,
+            description,
+            price,
+            location,
+            images: imageUrls,
+          },
+        }),
+      });
 
-      const { data, error } = await supabase.from('posts').insert({
-        user_id: user.id,
-        city_id: city.id,
-        category_id: categoryId,
-        title,
-        description,
-        price: price || null,
-        location,
-        images: imageUrls,
-        stripe_payment_id: 'demo_' + Date.now(),
-        votes: 0,
-        reactions: { hot: 0, interested: 0, watching: 0, question: 0, deal: 0 },
-        expires_at: expiresAt.toISOString(),
-        is_active: true,
-      }).select().single();
+      const data = await response.json();
 
-      if (error) throw error;
+      if (data.error) {
+        alert(data.error);
+        setStep('form');
+        return;
+      }
+
+      const url = new URL(window.location.href);
+      url.searchParams.delete('session_id');
+      window.history.replaceState({}, '', url.toString());
 
       onClose();
       onPostCreated();
@@ -130,7 +193,7 @@ export function PostModal({ open, onClose, city, categories, onPostCreated, onSh
       }
     } catch (error: any) {
       alert(error.message || 'Failed to create post');
-      setStep('payment');
+      setStep('form');
     } finally {
       setUploading(false);
     }
@@ -141,6 +204,34 @@ export function PostModal({ open, onClose, city, categories, onPostCreated, onSh
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white/10 backdrop-blur-xl border-2 border-white/20 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-[0_0_50px_rgba(234,179,8,0.3)]">
+        {step === 'payment' && (
+          <div className="p-8 text-center">
+            <div className="text-6xl mb-6 animate-bounce">💳</div>
+            <h2 className="text-3xl font-black text-yellow-400 mb-2" style={{ fontFamily: 'Impact, sans-serif' }}>
+              $1 • 7 DAYS • {city?.name?.toUpperCase()}
+            </h2>
+            <p className="text-gray-300 mb-6">Pay first, then create your listing.</p>
+
+            <div className="space-y-3">
+              <button
+                onClick={handleStartPayment}
+                disabled={checkingPayment}
+                className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-black py-4 rounded-xl text-lg transform hover:scale-105 transition-all shadow-lg border-2 border-white/20 disabled:opacity-60"
+              >
+                {checkingPayment ? 'REDIRECTING...' : '💰 PAY $1 NOW'}
+              </button>
+
+              <button
+                onClick={onClose}
+                disabled={checkingPayment}
+                className="w-full text-gray-400 hover:text-white font-bold py-2 transition-colors disabled:opacity-60"
+              >
+                cancel
+              </button>
+            </div>
+          </div>
+        )}
+
         {step === 'form' && (
           <div className="p-8">
             <div className="flex items-center justify-between mb-6">
@@ -150,6 +241,7 @@ export function PostModal({ open, onClose, city, categories, onPostCreated, onSh
                 </h2>
                 <div className="text-sm text-gray-300 mt-1">
                   City: <span className="text-cyan-300 font-bold uppercase">{city?.name}</span>
+                  <span className="text-green-400 ml-2">✓ PAID</span>
                 </div>
               </div>
               <button onClick={onClose} className="text-white hover:text-yellow-400 transition-colors">
@@ -271,46 +363,11 @@ export function PostModal({ open, onClose, city, categories, onPostCreated, onSh
               </div>
 
               <button
-                onClick={handleContinue}
-                className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-black font-black py-4 rounded-xl text-lg transform hover:scale-105 transition-all shadow-lg border-2 border-white/20"
-              >
-                CONTINUE →
-              </button>
-            </div>
-          </div>
-        )}
-
-        {step === 'payment' && (
-          <div className="p-8 text-center">
-            <div className="text-6xl mb-6 animate-bounce">💳</div>
-            <h2 className="text-3xl font-black text-yellow-400 mb-2" style={{ fontFamily: 'Impact, sans-serif' }}>
-              $1 • 7 DAYS • {city?.name?.toUpperCase()}
-            </h2>
-            <p className="text-gray-300 mb-6">Complete payment to publish your listing.</p>
-
-            <div className="space-y-3">
-              <button
-                onClick={handleDemoPayment}
+                onClick={handleSubmitPost}
                 disabled={uploading}
-                className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-black py-4 rounded-xl text-lg transform hover:scale-105 transition-all shadow-lg border-2 border-white/20 disabled:opacity-60"
+                className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-black font-black py-4 rounded-xl text-lg transform hover:scale-105 transition-all shadow-lg border-2 border-white/20 disabled:opacity-60"
               >
-                ✅ POST NOW (DEMO)
-              </button>
-
-              <button
-                onClick={() => setStep('form')}
-                disabled={uploading}
-                className="w-full bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white font-bold py-3 rounded-xl transition-all border-2 border-white/20 disabled:opacity-60"
-              >
-                ← BACK
-              </button>
-
-              <button
-                onClick={onClose}
-                disabled={uploading}
-                className="w-full text-gray-400 hover:text-white font-bold py-2 transition-colors disabled:opacity-60"
-              >
-                cancel
+                {uploading ? 'PUBLISHING...' : '🚀 PUBLISH POST'}
               </button>
             </div>
           </div>

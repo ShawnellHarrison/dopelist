@@ -22,9 +22,9 @@ Deno.serve(async (req: Request) => {
 
     if (!stripeSecretKey) {
       return new Response(
-        JSON.stringify({ error: 'Stripe not configured' }),
+        JSON.stringify({ error: 'Stripe not configured', demo: true }),
         {
-          status: 400,
+          status: 200,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         }
       );
@@ -46,7 +46,7 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const { postData, returnUrl } = await req.json();
+    const { cityId, returnUrl } = await req.json();
 
     const stripe = new Stripe(stripeSecretKey, {
       apiVersion: '2023-10-16',
@@ -60,7 +60,7 @@ Deno.serve(async (req: Request) => {
             currency: 'usd',
             product_data: {
               name: 'Post Classified Ad',
-              description: `7-day listing: ${postData.title}`,
+              description: '7-day listing on DOPELIST',
             },
             unit_amount: 100,
           },
@@ -68,11 +68,11 @@ Deno.serve(async (req: Request) => {
         },
       ],
       mode: 'payment',
-      success_url: `${returnUrl}?session_id={CHECKOUT_SESSION_ID}&post_success=true`,
-      cancel_url: `${returnUrl}?post_cancelled=true`,
+      success_url: `${returnUrl}?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: returnUrl,
       metadata: {
         user_id: user.id,
-        post_data: JSON.stringify(postData),
+        city_id: cityId,
       },
     });
 

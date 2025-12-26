@@ -30,12 +30,20 @@ function DopeListApp() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showPostModal, setShowPostModal] = useState(false);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadCities();
     loadCategories();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const sid = urlParams.get('session_id');
+    if (sid) {
+      setSessionId(sid);
+      setShowPostModal(true);
+    }
   }, []);
 
   useEffect(() => {
@@ -43,6 +51,36 @@ function DopeListApp() {
       loadPosts();
     }
   }, [selectedCity, selectedSection, selectedCategory]);
+
+  useEffect(() => {
+    if (!supabase || !selectedCity || !selectedSection) return;
+
+    const sectionCategories = categories
+      .filter((c) => c.section === selectedSection)
+      .map((c) => c.id);
+
+    if (sectionCategories.length === 0) return;
+
+    const subscription = supabase
+      .channel('posts-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'posts',
+          filter: `city_id=eq.${selectedCity.id}`,
+        },
+        () => {
+          loadPosts();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [selectedCity, selectedSection, categories]);
 
   const loadCities = async () => {
     if (!supabase) return;
@@ -533,7 +571,10 @@ function DopeListApp() {
 
       <PostModal
         open={showPostModal}
-        onClose={() => setShowPostModal(false)}
+        onClose={() => {
+          setShowPostModal(false);
+          setSessionId(null);
+        }}
         city={selectedCity}
         categories={sectionCategories}
         onPostCreated={loadPosts}
@@ -541,6 +582,7 @@ function DopeListApp() {
           setShowUpgradePrompt(true);
           setShowAuthModal(true);
         }}
+        sessionId={sessionId}
       />
 
       <style>{`
