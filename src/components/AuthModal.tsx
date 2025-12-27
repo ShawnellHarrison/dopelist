@@ -41,7 +41,7 @@ export function AuthModal({ open, onClose, mode = 'signin' }: AuthModalProps) {
               </h2>
               <p className="text-gray-300 text-sm mt-1">
                 {isUpgradeMode
-                  ? 'Link an email to claim your posts and keep your account.'
+                  ? 'Claim your posts and keep access across devices.'
                   : 'Jump in fast (anonymous) or use email/password.'}
               </p>
             </div>
@@ -119,56 +119,21 @@ export function AuthModal({ open, onClose, mode = 'signin' }: AuthModalProps) {
           )}
 
           <div className={isUpgradeMode ? 'mt-6 space-y-3' : 'space-y-3'}>
-            {tab === 'magiclink' && !isUpgradeMode ? (
-              magicLinkSent ? (
-                <div className="bg-green-500/20 border-2 border-green-400/50 rounded-xl p-6 text-center">
-                  <div className="text-4xl mb-3">📧</div>
-                  <h3 className="text-xl font-bold text-white mb-2">Check your email!</h3>
-                  <p className="text-gray-300 text-sm">
-                    We've sent a magic link to <strong>{email}</strong>. Click the link in your email to sign in.
-                  </p>
-                  <button
-                    onClick={() => setMagicLinkSent(false)}
-                    className="mt-4 text-sm text-yellow-400 hover:text-yellow-300 font-bold"
-                  >
-                    Send another link
-                  </button>
-                </div>
-              ) : (
-                <>
-                  <div>
-                    <label className="block text-white font-bold mb-2 text-sm uppercase tracking-wide">Email</label>
-                    <input
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="you@email.com"
-                      type="email"
-                      className="w-full bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/50 transition-all"
-                    />
-                  </div>
-                  <button
-                    disabled={busy || !email}
-                    onClick={async () => {
-                      try {
-                        setBusy(true);
-                        await signInMagicLink(email);
-                        setMagicLinkSent(true);
-                      } catch (e: any) {
-                        alert(e?.message || 'Failed to send magic link');
-                      } finally {
-                        setBusy(false);
-                      }
-                    }}
-                    className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-black py-4 rounded-xl text-lg border-2 border-white/20 disabled:opacity-60 transition-all hover:shadow-[0_0_25px_rgba(168,85,247,0.5)]"
-                  >
-                    {busy ? 'SENDING...' : 'SEND MAGIC LINK'}
-                  </button>
-                  <p className="text-xs text-gray-400 mt-2">
-                    No password needed. Just click the link in your email to sign in instantly.
-                  </p>
-                </>
-              )
-            ) : (
+            {magicLinkSent ? (
+              <div className="bg-green-500/20 border-2 border-green-400/50 rounded-xl p-6 text-center">
+                <div className="text-4xl mb-3">📧</div>
+                <h3 className="text-xl font-bold text-white mb-2">Check your email!</h3>
+                <p className="text-gray-300 text-sm">
+                  We've sent a {isUpgradeMode ? 'confirmation' : 'magic'} link to <strong>{email}</strong>. Click the link in your email to {isUpgradeMode ? 'save your account' : 'sign in'}.
+                </p>
+                <button
+                  onClick={() => setMagicLinkSent(false)}
+                  className="mt-4 text-sm text-yellow-400 hover:text-yellow-300 font-bold"
+                >
+                  Send another link
+                </button>
+              </div>
+            ) : (tab === 'magiclink' && !isUpgradeMode) ? (
               <>
                 <div>
                   <label className="block text-white font-bold mb-2 text-sm uppercase tracking-wide">Email</label>
@@ -180,9 +145,46 @@ export function AuthModal({ open, onClose, mode = 'signin' }: AuthModalProps) {
                     className="w-full bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/50 transition-all"
                   />
                 </div>
+                <button
+                  disabled={busy || !email}
+                  onClick={async () => {
+                    try {
+                      setBusy(true);
+                      await signInMagicLink(email);
+                      setMagicLinkSent(true);
+                    } catch (e: any) {
+                      alert(e?.message || 'Failed to send magic link');
+                    } finally {
+                      setBusy(false);
+                    }
+                  }}
+                  className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-purple-700 text-white font-black py-4 rounded-xl text-lg border-2 border-white/20 disabled:opacity-60 transition-all hover:shadow-[0_0_25px_rgba(168,85,247,0.5)]"
+                >
+                  {busy ? 'SENDING...' : 'SEND MAGIC LINK'}
+                </button>
+                <p className="text-xs text-gray-400 mt-2">
+                  No password needed. Just click the link in your email to sign in instantly.
+                </p>
+              </>
+            ) : (
+              <>
+                <div>
+                  <label className="block text-white font-bold mb-2 text-sm uppercase tracking-wide">
+                    {isUpgradeMode ? 'Email (used to recover your account)' : 'Email'}
+                  </label>
+                  <input
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@email.com"
+                    type="email"
+                    className="w-full bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/50 transition-all"
+                  />
+                </div>
 
                 <div>
-                  <label className="block text-white font-bold mb-2 text-sm uppercase tracking-wide">Password</label>
+                  <label className="block text-white font-bold mb-2 text-sm uppercase tracking-wide">
+                    {isUpgradeMode ? 'Create a password (optional)' : 'Password'}
+                  </label>
                   <input
                     type="password"
                     value={pw}
@@ -190,6 +192,11 @@ export function AuthModal({ open, onClose, mode = 'signin' }: AuthModalProps) {
                     placeholder="••••••••"
                     className="w-full bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/50 transition-all"
                   />
+                  {isUpgradeMode && (
+                    <p className="text-xs text-gray-400 mt-2">
+                      Passwords are optional. If you skip this, you'll receive an email link to sign in.
+                    </p>
+                  )}
                 </div>
               </>
             )}
@@ -218,26 +225,36 @@ export function AuthModal({ open, onClose, mode = 'signin' }: AuthModalProps) {
               </button>
             )}
 
-            {(tab === 'signup' || isUpgradeMode) && tab !== 'magiclink' && (
+            {(tab === 'signup' || isUpgradeMode) && !magicLinkSent && (
               <button
-                disabled={busy}
+                disabled={busy || !email}
                 onClick={async () => {
                   try {
                     setBusy(true);
-                    await signUpEmail(email, pw);
-                    alert(isUpgradeMode ? 'Account upgraded! Your posts are now saved.' : 'Account created!');
-                    onClose();
+                    if (isUpgradeMode) {
+                      if (pw) {
+                        await signUpEmail(email, pw);
+                        onClose();
+                      } else {
+                        await signInMagicLink(email);
+                        setMagicLinkSent(true);
+                      }
+                    } else {
+                      await signUpEmail(email, pw);
+                      alert('Account created!');
+                      onClose();
+                    }
                   } catch (e: any) {
-                    alert(e?.message || 'Sign up failed');
+                    alert(e?.message || 'Failed to save account');
                   } finally {
                     setBusy(false);
                   }
                 }}
                 className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-black py-4 rounded-xl text-lg border-2 border-white/20 disabled:opacity-60 transition-all hover:shadow-[0_0_25px_rgba(236,72,153,0.5)]"
               >
-                {busy ? (isUpgradeMode ? 'UPGRADING...' : 'CREATING...') : (
+                {busy ? (isUpgradeMode ? 'SAVING...' : 'CREATING...') : (
                   <span className="inline-flex items-center gap-2 justify-center">
-                    <UserPlus size={18} /> {isUpgradeMode ? 'UPGRADE ACCOUNT' : 'CREATE ACCOUNT'}
+                    <UserPlus size={18} /> {isUpgradeMode ? 'SAVE ACCOUNT' : 'CREATE ACCOUNT'}
                   </span>
                 )}
               </button>
