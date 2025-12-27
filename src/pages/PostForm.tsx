@@ -5,7 +5,8 @@
  import { Upload, X, MapPin, DollarSign, Calendar, Tag } from 'lucide-react';
 +import { Link } from 'react-router-dom';
  
- interface Category {
+ inter}
+face Category {
 @@ .. @@
  export function PostForm() {
    const navigate = useNavigate();
@@ -40,6 +41,7 @@
 +            </div>
 +          </div>
 +        </div>
-+      )}
++    
+}  )}
 +
        <form onSubmit={handleSubmit} className="space-y-6">
