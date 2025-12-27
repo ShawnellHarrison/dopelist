@@ -8,22 +8,22 @@ export interface StripeProduct {
   mode: 'payment' | 'subscription';
 }
 
-export const stripeProducts: StripeProduct[] = [
+export const STRIPE_PRODUCTS: StripeProduct[] = [
   {
     id: 'prod_Tg7xizH5vcClOw',
     priceId: 'price_1SilhYEjTiKwQHWzBAJk1rrN',
     name: 'Dopelist',
-    description: 'Access to premium classified listings',
+    description: 'Premium classified ad posting with enhanced visibility and features',
     price: 1.00,
     currency: 'usd',
     mode: 'payment'
   }
 ];
 
-export function getProductById(id: string): StripeProduct | undefined {
-  return stripeProducts.find(product => product.id === id);
-}
+export const getProductById = (id: string): StripeProduct | undefined => {
+  return STRIPE_PRODUCTS.find(product => product.id === id);
+};
 
-export function getProductByPriceId(priceId: string): StripeProduct | undefined {
-  return stripeProducts.find(product => product.priceId === priceId);
-}
+export const getProductByPriceId = (priceId: string): StripeProduct | undefined => {
+  return STRIPE_PRODUCTS.find(product => product.priceId === priceId);
+};
