@@ -39,8 +39,8 @@ export function AuthModal({ open, onClose, mode = 'signin' }: AuthModalProps) {
               </h2>
               <p className="text-gray-300 text-sm mt-1">
                 {isUpgradeMode
-                  ? 'Link an email to claim your posts and keep your account.'
-                  : 'Jump in fast (anonymous) or use email/password.'}
+                  ? 'Secure your All-Mighty DopeList account. Link an email to claim all your posts.'
+                  : 'Start posting instantly (anonymous) or create a permanent account.'}
               </p>
             </div>
             <button onClick={onClose} className="text-white hover:text-yellow-400 transition-colors">
@@ -148,7 +148,7 @@ export function AuthModal({ open, onClose, mode = 'signin' }: AuthModalProps) {
                   try {
                     setBusy(true);
                     await signUpEmail(email, pw);
-                    alert(isUpgradeMode ? 'Account upgraded! Your posts are now saved.' : 'Account created!');
+                    alert(isUpgradeMode ? 'Account secured. All your posts are now permanent.' : 'Welcome to All-Mighty DopeList!');
                     onClose();
                   } catch (e: any) {
                     alert(e?.message || 'Sign up failed');

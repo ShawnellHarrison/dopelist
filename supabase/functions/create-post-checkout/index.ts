@@ -59,8 +59,8 @@ Deno.serve(async (req: Request) => {
           price_data: {
             currency: 'usd',
             product_data: {
-              name: 'Post Classified Ad',
-              description: '7-day listing on DOPELIST',
+              name: 'All-Mighty DopeList Classified Post',
+              description: '7-day listing on the master network',
             },
             unit_amount: 100,
           },
