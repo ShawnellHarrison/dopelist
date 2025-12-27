@@ -19,7 +19,11 @@ export function AuthModal({ open, onClose, mode = 'signin' }: AuthModalProps) {
 
   useEffect(() => {
     if (!open) return;
-    setTab(mode === 'upgrade' ? 'signup' : 'signin');
+    if (mode === 'upgrade' && tab !== 'signin' && tab !== 'magiclink') {
+      setTab('signup');
+    } else if (mode === 'signin') {
+      setTab('signin');
+    }
     setEmail('');
     setPw('');
     setBusy(false);
@@ -28,7 +32,7 @@ export function AuthModal({ open, onClose, mode = 'signin' }: AuthModalProps) {
 
   if (!open) return null;
 
-  const isUpgradeMode = mode === 'upgrade';
+  const isUpgradeMode = mode === 'upgrade' && tab !== 'signin' && tab !== 'magiclink';
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
@@ -133,7 +137,7 @@ export function AuthModal({ open, onClose, mode = 'signin' }: AuthModalProps) {
                   Send another link
                 </button>
               </div>
-            ) : (tab === 'magiclink' && !isUpgradeMode) ? (
+            ) : tab === 'magiclink' ? (
               <>
                 <div>
                   <label className="block text-white font-bold mb-2 text-sm uppercase tracking-wide">Email</label>
@@ -165,6 +169,14 @@ export function AuthModal({ open, onClose, mode = 'signin' }: AuthModalProps) {
                 <p className="text-xs text-gray-400 mt-2">
                   No password needed. Just click the link in your email to sign in instantly.
                 </p>
+                {mode === 'upgrade' && (
+                  <button
+                    onClick={() => setTab('signup')}
+                    className="w-full text-sm text-yellow-400 hover:text-yellow-300 font-bold py-2 transition-colors"
+                  >
+                    don't have an account? save this one
+                  </button>
+                )}
               </>
             ) : (
               <>
@@ -201,28 +213,38 @@ export function AuthModal({ open, onClose, mode = 'signin' }: AuthModalProps) {
               </>
             )}
 
-            {tab === 'signin' && !isUpgradeMode && (
-              <button
-                disabled={busy}
-                onClick={async () => {
-                  try {
-                    setBusy(true);
-                    await signInEmail(email, pw);
-                    onClose();
-                  } catch (e: any) {
-                    alert(e?.message || 'Sign in failed');
-                  } finally {
-                    setBusy(false);
-                  }
-                }}
-                className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-black py-4 rounded-xl text-lg border-2 border-white/20 disabled:opacity-60 transition-all hover:shadow-[0_0_25px_rgba(16,185,129,0.5)]"
-              >
-                {busy ? 'SIGNING IN...' : (
-                  <span className="inline-flex items-center gap-2 justify-center">
-                    <LogIn size={18} /> SIGN IN
-                  </span>
+            {tab === 'signin' && (
+              <>
+                <button
+                  disabled={busy}
+                  onClick={async () => {
+                    try {
+                      setBusy(true);
+                      await signInEmail(email, pw);
+                      onClose();
+                    } catch (e: any) {
+                      alert(e?.message || 'Sign in failed');
+                    } finally {
+                      setBusy(false);
+                    }
+                  }}
+                  className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-black py-4 rounded-xl text-lg border-2 border-white/20 disabled:opacity-60 transition-all hover:shadow-[0_0_25px_rgba(16,185,129,0.5)]"
+                >
+                  {busy ? 'SIGNING IN...' : (
+                    <span className="inline-flex items-center gap-2 justify-center">
+                      <LogIn size={18} /> SIGN IN
+                    </span>
+                  )}
+                </button>
+                {mode === 'upgrade' && (
+                  <button
+                    onClick={() => setTab('signup')}
+                    className="w-full text-sm text-yellow-400 hover:text-yellow-300 font-bold py-2 transition-colors"
+                  >
+                    don't have an account? save this one
+                  </button>
                 )}
-              </button>
+              </>
             )}
 
             {(tab === 'signup' || isUpgradeMode) && !magicLinkSent && (
@@ -287,13 +309,23 @@ export function AuthModal({ open, onClose, mode = 'signin' }: AuthModalProps) {
             )}
           </div>
 
-          {isUpgradeMode && (
-            <button
-              onClick={onClose}
-              className="w-full mt-4 text-gray-400 hover:text-white font-bold py-2 transition-colors"
-            >
-              maybe later
-            </button>
+          {mode === 'upgrade' && (
+            <>
+              {isUpgradeMode && (
+                <button
+                  onClick={() => setTab('signin')}
+                  className="w-full mt-4 text-yellow-400 hover:text-yellow-300 font-bold py-2 transition-colors"
+                >
+                  already have an account? sign in
+                </button>
+              )}
+              <button
+                onClick={onClose}
+                className={`w-full text-gray-400 hover:text-white font-bold py-2 transition-colors ${isUpgradeMode ? '' : 'mt-4'}`}
+              >
+                maybe later
+              </button>
+            </>
           )}
         </div>
       </div>
