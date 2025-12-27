@@ -15,11 +15,11 @@ export function HomePage() {
         <div className="text-center">
           <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
             Welcome to{' '}
-            <span className="text-blue-600">Dopelist</span>
+            <span className="text-blue-600">All-Mighty DopeList</span>
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Discover premium classified listings and connect with your community. 
-            Access exclusive content and features with our premium plans.
+            The master network of city-based classifieds. Command your search with authority and trust.
+            Access powerful features and premium listings across all cities.
           </p>
 
           {user ? (
@@ -74,10 +74,10 @@ export function HomePage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="text-center mb-16">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            Why Choose Dopelist?
+            Why Choose All-Mighty DopeList?
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Experience the best in classified listings with our premium features and secure platform.
+            The definitive platform for classified listings. Built with power, secured with authority, trusted by all.
           </p>
         </div>
 

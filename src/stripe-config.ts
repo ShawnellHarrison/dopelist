@@ -12,8 +12,8 @@ export const STRIPE_PRODUCTS: StripeProduct[] = [
   {
     id: 'prod_Tg7xizH5vcClOw',
     priceId: 'price_1SilhYEjTiKwQHWzBAJk1rrN',
-    name: 'Dopelist',
-    description: 'Premium classified ad posting with enhanced visibility and features',
+    name: 'All-Mighty DopeList Premium',
+    description: 'Command maximum visibility with premium listing features on the master network of city classifieds',
     price: 1.00,
     currency: 'usd',
     mode: 'payment'

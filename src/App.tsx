@@ -246,7 +246,7 @@ function DopeListApp() {
                     className="bg-gradient-to-r from-yellow-400 via-pink-500 to-cyan-400 text-transparent bg-clip-text animate-pulse"
                     style={{ fontFamily: 'Impact, sans-serif' }}
                   >
-                    DOPELIST
+                    ALL-MIGHTY DOPELIST
                   </span>
                 </h1>
 

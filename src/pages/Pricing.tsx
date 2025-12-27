@@ -4,7 +4,7 @@ import { StripeCheckout } from '../components/StripeCheckout';
 import { Check, Star } from 'lucide-react';
 
 export function Pricing() {
-  const product = STRIPE_PRODUCTS[0]; // Dopelist product
+  const product = STRIPE_PRODUCTS[0]; // All-Mighty DopeList product
 
   const features = [
     'Enhanced visibility in search results',
@@ -22,10 +22,10 @@ export function Pricing() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Boost Your Listings
+            Dominate Your Market
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Get maximum exposure for your classified ads with our premium features
+            Command maximum visibility for your listings with All-Mighty DopeList premium features
           </p>
         </div>
 

@@ -23,7 +23,7 @@ export function CheckoutSuccess() {
       setOrderDetails({
         sessionId,
         amount: '$1.00',
-        product: 'Dopelist'
+        product: 'All-Mighty DopeList Premium'
       });
       setLoading(false);
     }, 1500);
