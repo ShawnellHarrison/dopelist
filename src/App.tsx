@@ -212,7 +212,7 @@ function DopeListApp() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-black via-purple-950 to-black flex items-center justify-center">
-        <div className="text-white text-2xl font-black">LOADING...</div>
+        <div className="text-white text-2xl font-black">LOADING ALL-MIGHTY DOPELIST...</div>
       </div>
     );
   }
@@ -246,7 +246,7 @@ function DopeListApp() {
                     className="bg-gradient-to-r from-yellow-400 via-pink-500 to-cyan-400 text-transparent bg-clip-text animate-pulse"
                     style={{ fontFamily: 'Impact, sans-serif' }}
                   >
-                    DOPELIST
+                    ALL-MIGHTY DOPELIST
                   </span>
                 </h1>
 
@@ -344,7 +344,7 @@ function DopeListApp() {
               >
                 Choose your city
               </h2>
-              <p className="text-gray-300 mb-6">Browse classifieds in your area</p>
+              <p className="text-gray-300 mb-6">The master network spans every major city. Select yours to begin.</p>
 
               <div className="space-y-8">
                 {Object.keys(citiesByCountry)
@@ -381,7 +381,7 @@ function DopeListApp() {
               >
                 Browse by section
               </h2>
-              <p className="text-gray-300 mb-6">What are you looking for?</p>
+              <p className="text-gray-300 mb-6">Select a category. All-Mighty DopeList covers every need.</p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {SECTIONS.map((section) => {
@@ -555,7 +555,7 @@ function DopeListApp() {
                 <div className="text-center py-20">
                   <div className="text-6xl mb-4">🔍</div>
                   <p className="text-white text-xl font-bold">No listings found</p>
-                  <p className="text-gray-400">Try a different category or search term</p>
+                  <p className="text-gray-400">Be the first to post in this category</p>
                 </div>
               )}
             </div>
