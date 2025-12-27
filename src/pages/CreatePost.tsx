@@ -150,12 +150,20 @@ export function CreatePost() {
     <div className="min-h-screen bg-gradient-to-br from-black via-purple-950 to-black py-6 md:py-12 px-4">
       <div className="max-w-2xl mx-auto">
         <div className="bg-white/10 backdrop-blur-xl border-2 border-white/20 rounded-2xl p-4 md:p-8 shadow-lg">
-          <button
-            onClick={() => navigate('/')}
-            className="text-gray-300 hover:text-white mb-6 transition-colors"
-          >
-            ← Back to Home
-          </button>
+          <div className="flex items-center justify-between mb-6">
+            <button
+              onClick={() => navigate('/')}
+              className="text-gray-300 hover:text-white transition-colors"
+            >
+              ← Back to Home
+            </button>
+            <button
+              onClick={() => navigate('/manage')}
+              className="text-yellow-400 hover:text-yellow-300 text-sm font-semibold transition-colors"
+            >
+              Already posted? Manage your listings →
+            </button>
+          </div>
 
           <h1 className="text-2xl md:text-3xl font-black text-white mb-2">Create a Post</h1>
           <p className="text-gray-300 mb-6 md:mb-8 text-sm md:text-base">

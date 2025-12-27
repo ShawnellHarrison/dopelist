@@ -81,10 +81,6 @@ export function SuccessPage() {
 
       localStorage.removeItem('pendingPost');
       setStatus('success');
-
-      setTimeout(() => {
-        navigate('/');
-      }, 3000);
     } catch (err: any) {
       console.error('Error creating post:', err);
       setError(err.message || 'Failed to create post');
@@ -138,17 +134,28 @@ export function SuccessPage() {
 
           <h2 className="text-3xl font-black text-white mb-4">Post Live!</h2>
 
-          <p className="text-gray-300 mb-2">
+          <p className="text-gray-300 mb-8">
             Your post is now visible and will remain active for 7 days.
           </p>
-          <p className="text-gray-400 text-sm mb-8">Redirecting to home page...</p>
 
-          <button
-            onClick={() => navigate('/')}
-            className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-black py-3 rounded-xl font-bold transition-all"
-          >
-            View All Posts
-          </button>
+          <div className="space-y-3">
+            <button
+              onClick={() => navigate('/manage')}
+              className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white py-3 rounded-xl font-bold transition-all"
+            >
+              Manage Your Posts
+            </button>
+            <button
+              onClick={() => navigate('/')}
+              className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-black py-3 rounded-xl font-bold transition-all"
+            >
+              View All Posts
+            </button>
+          </div>
+
+          <p className="text-gray-400 text-sm mt-6 text-center">
+            Bookmark /manage to quickly find your posts later
+          </p>
         </div>
       </div>
     </div>

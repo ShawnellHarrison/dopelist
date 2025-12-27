@@ -8,17 +8,21 @@ import {
   ChevronUp,
   ChevronDown,
   Image as ImageIcon,
+  Bell,
 } from 'lucide-react';
 import { AuthProvider, useAuth } from './components/AuthProvider';
 import { AuthModal } from './components/AuthModal';
 import { Comments } from './components/Comments';
+import { FloatingManageButton } from './components/FloatingManageButton';
 import { supabase, getSupabaseUrl } from './lib/supabase';
 import { SECTIONS, REACTIONS, formatTimeLeft } from './lib/constants';
+import { useExpiringPosts } from './hooks/useExpiringPosts';
 import type { City, Category, PostWithDetails, Section } from './types';
 
 function DopeListApp() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const { expiringCount } = useExpiringPosts();
 
   const [cities, setCities] = useState<City[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -259,16 +263,28 @@ function DopeListApp() {
                   </span>
                 </h1>
 
-                {selectedCity && (
-                  <button
-                    onClick={() => navigate('/create-post')}
-                    className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white px-4 md:px-6 py-2 md:py-3 rounded-xl font-bold flex items-center gap-2 transform hover:scale-105 transition-all shadow-lg border-2 border-white/20 whitespace-nowrap text-sm md:text-base flex-shrink-0"
-                  >
-                    <Plus size={18} className="md:w-5 md:h-5" />
-                    <span className="hidden sm:inline">POST FOR $1</span>
-                    <span className="sm:hidden">POST</span>
-                  </button>
-                )}
+                <div className="flex items-center gap-2">
+                  {user && expiringCount > 0 && (
+                    <button
+                      onClick={() => navigate('/manage')}
+                      className="relative bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 px-3 md:px-4 py-2 md:py-3 rounded-xl font-bold flex items-center gap-2 transition-all border-2 border-yellow-400/40 whitespace-nowrap text-sm flex-shrink-0"
+                    >
+                      <Bell size={16} className="md:w-4 md:h-4" />
+                      <span className="hidden sm:inline">{expiringCount} expiring</span>
+                      <span className="sm:hidden">{expiringCount}</span>
+                    </button>
+                  )}
+                  {selectedCity && (
+                    <button
+                      onClick={() => navigate('/create-post')}
+                      className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white px-4 md:px-6 py-2 md:py-3 rounded-xl font-bold flex items-center gap-2 transform hover:scale-105 transition-all shadow-lg border-2 border-white/20 whitespace-nowrap text-sm md:text-base flex-shrink-0"
+                    >
+                      <Plus size={18} className="md:w-5 md:h-5" />
+                      <span className="hidden sm:inline">POST FOR $1</span>
+                      <span className="sm:hidden">POST</span>
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div className="flex flex-col gap-2">
@@ -362,12 +378,22 @@ function DopeListApp() {
                   </h2>
                   <p className="text-gray-300 text-sm md:text-base">Browse classifieds in your area</p>
                 </div>
-                <button
-                  onClick={() => navigate('/create-post')}
-                  className="text-yellow-400 hover:text-yellow-300 font-bold underline underline-offset-4 transition-colors whitespace-nowrap self-start sm:self-auto text-sm md:text-base"
-                >
-                  Create Post Now →
-                </button>
+                <div className="flex flex-col gap-2 self-start sm:self-auto">
+                  <button
+                    onClick={() => navigate('/create-post')}
+                    className="text-yellow-400 hover:text-yellow-300 font-bold underline underline-offset-4 transition-colors whitespace-nowrap text-sm md:text-base"
+                  >
+                    Create Post Now →
+                  </button>
+                  {user && (
+                    <button
+                      onClick={() => navigate('/manage')}
+                      className="text-cyan-400 hover:text-cyan-300 font-semibold underline underline-offset-4 transition-colors whitespace-nowrap text-sm"
+                    >
+                      Check your posts →
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div className="space-y-8">
@@ -634,6 +660,8 @@ function DopeListApp() {
         onClose={() => setShowAuthModal(false)}
         mode={authModalMode}
       />
+
+      <FloatingManageButton />
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
