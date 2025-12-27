@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Search,
   Plus,
@@ -10,7 +11,6 @@ import {
 } from 'lucide-react';
 import { AuthProvider, useAuth } from './components/AuthProvider';
 import { AuthModal } from './components/AuthModal';
-import { PostModal } from './components/PostModal';
 import { Comments } from './components/Comments';
 import { supabase, getSupabaseUrl } from './lib/supabase';
 import { SECTIONS, REACTIONS, formatTimeLeft } from './lib/constants';
@@ -18,6 +18,7 @@ import type { City, Category, PostWithDetails, Section } from './types';
 
 function DopeListApp() {
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
 
   const [cities, setCities] = useState<City[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -29,22 +30,12 @@ function DopeListApp() {
   const [searchQuery, setSearchQuery] = useState('');
 
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [showPostModal, setShowPostModal] = useState(false);
-  const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
-  const [sessionId, setSessionId] = useState<string | null>(null);
 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadCities();
     loadCategories();
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const sid = urlParams.get('session_id');
-    if (sid) {
-      setSessionId(sid);
-      setShowPostModal(true);
-    }
   }, []);
 
   useEffect(() => {
@@ -328,7 +319,7 @@ function DopeListApp() {
 
               {selectedCity && (
                 <button
-                  onClick={() => setShowPostModal(true)}
+                  onClick={() => navigate('/create-post')}
                   className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 transform hover:scale-105 transition-all shadow-lg border-2 border-white/20 whitespace-nowrap"
                 >
                   <Plus size={20} />
@@ -366,12 +357,7 @@ function DopeListApp() {
                   <p className="text-gray-300">Browse classifieds in your area</p>
                 </div>
                 <button
-                  onClick={() => {
-                    if (cities.length > 0) {
-                      setSelectedCity(cities[0]);
-                      setShowPostModal(true);
-                    }
-                  }}
+                  onClick={() => navigate('/create-post')}
                   className="text-yellow-400 hover:text-yellow-300 font-bold underline underline-offset-4 transition-colors whitespace-nowrap"
                 >
                   Create Post Now →
@@ -418,7 +404,7 @@ function DopeListApp() {
                   <p className="text-gray-300">What are you looking for?</p>
                 </div>
                 <button
-                  onClick={() => setShowPostModal(true)}
+                  onClick={() => navigate('/create-post')}
                   className="text-yellow-400 hover:text-yellow-300 font-bold underline underline-offset-4 transition-colors whitespace-nowrap"
                 >
                   Create Post Now →
@@ -485,7 +471,7 @@ function DopeListApp() {
                 </div>
                 {selectedCategory && (
                   <button
-                    onClick={() => setShowPostModal(true)}
+                    onClick={() => navigate('/create-post')}
                     className="text-yellow-400 hover:text-yellow-300 font-bold underline underline-offset-4 transition-colors whitespace-nowrap"
                   >
                     Create Post Now →
@@ -613,7 +599,7 @@ function DopeListApp() {
                   <p className="text-white text-xl font-bold mb-2">No listings found</p>
                   <p className="text-gray-400 mb-6">Try a different category or search term</p>
                   <button
-                    onClick={() => setShowPostModal(true)}
+                    onClick={() => navigate('/create-post')}
                     className="text-yellow-400 hover:text-yellow-300 font-bold underline underline-offset-4 transition-colors text-lg"
                   >
                     Create the first post →
@@ -625,7 +611,7 @@ function DopeListApp() {
                 <div className="text-center py-8 mt-6">
                   <p className="text-gray-400 mb-3">Only {filteredPosts.length} {filteredPosts.length === 1 ? 'listing' : 'listings'} found</p>
                   <button
-                    onClick={() => setShowPostModal(true)}
+                    onClick={() => navigate('/create-post')}
                     className="text-yellow-400 hover:text-yellow-300 font-bold underline underline-offset-4 transition-colors"
                   >
                     Create Post Now →
@@ -640,23 +626,7 @@ function DopeListApp() {
       <AuthModal
         open={showAuthModal}
         onClose={() => setShowAuthModal(false)}
-        mode={showUpgradePrompt ? 'upgrade' : 'signin'}
-      />
-
-      <PostModal
-        open={showPostModal}
-        onClose={() => {
-          setShowPostModal(false);
-          setSessionId(null);
-        }}
-        city={selectedCity}
-        categories={sectionCategories}
-        onPostCreated={loadPosts}
-        onShowUpgradePrompt={() => {
-          setShowUpgradePrompt(true);
-          setShowAuthModal(true);
-        }}
-        sessionId={sessionId}
+        mode="signin"
       />
 
       <style>{`
