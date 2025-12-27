@@ -599,28 +599,11 @@ function DopeListApp() {
   );
 }
 
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Header } from './components/layout/Header';
-import { LoginPage } from './pages/LoginPage';
-import { SignupPage } from './pages/SignupPage';
-import { ProductsPage } from './pages/ProductsPage';
-import { SuccessPage } from './pages/SuccessPage';
-import { HomePage } from './pages/HomePage';
 
 function App() {
   return (
-    <Router>
-      <div className="min-h-screen bg-gray-50">
-        <Header />
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignupPage />} />
-          <Route path="/products" element={<ProductsPage />} />
-          <Route path="/success" element={<SuccessPage />} />
-        </Routes>
-      </div>
-    </Router>
+      `}</style>
+    </div>
   );
 }
 

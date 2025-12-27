@@ -9,6 +9,8 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
+export const getSupabaseUrl = () => supabaseUrl
+
 export type Database = {
   public: {
     Tables: {
