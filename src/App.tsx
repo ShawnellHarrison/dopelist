@@ -355,13 +355,28 @@ function DopeListApp() {
         {!selectedCity && (
           <div className="max-w-7xl mx-auto px-4 py-10 pb-16">
             <div className="bg-white/10 backdrop-blur-xl border-2 border-white/20 rounded-2xl p-6 md:p-8 shadow-[0_0_50px_rgba(0,0,0,0.5)]">
-              <h2
-                className="text-3xl md:text-4xl font-black text-white mb-2"
-                style={{ fontFamily: 'Impact, sans-serif' }}
-              >
-                Choose your city
-              </h2>
-              <p className="text-gray-300 mb-6">Browse classifieds in your area</p>
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2
+                    className="text-3xl md:text-4xl font-black text-white mb-2"
+                    style={{ fontFamily: 'Impact, sans-serif' }}
+                  >
+                    Choose your city
+                  </h2>
+                  <p className="text-gray-300">Browse classifieds in your area</p>
+                </div>
+                <button
+                  onClick={() => {
+                    if (cities.length > 0) {
+                      setSelectedCity(cities[0]);
+                      setShowPostModal(true);
+                    }
+                  }}
+                  className="text-yellow-400 hover:text-yellow-300 font-bold underline underline-offset-4 transition-colors whitespace-nowrap"
+                >
+                  Create Post Now →
+                </button>
+              </div>
 
               <div className="space-y-8">
                 {Object.keys(citiesByCountry)
@@ -392,13 +407,23 @@ function DopeListApp() {
         {selectedCity && !selectedSection && (
           <div className="max-w-7xl mx-auto px-4 py-10">
             <div className="bg-white/10 backdrop-blur-xl border-2 border-white/20 rounded-2xl p-6 md:p-8 shadow-[0_0_50px_rgba(0,0,0,0.5)]">
-              <h2
-                className="text-3xl md:text-4xl font-black text-white mb-2"
-                style={{ fontFamily: 'Impact, sans-serif' }}
-              >
-                Browse by section
-              </h2>
-              <p className="text-gray-300 mb-6">What are you looking for?</p>
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2
+                    className="text-3xl md:text-4xl font-black text-white mb-2"
+                    style={{ fontFamily: 'Impact, sans-serif' }}
+                  >
+                    Browse by section
+                  </h2>
+                  <p className="text-gray-300">What are you looking for?</p>
+                </div>
+                <button
+                  onClick={() => setShowPostModal(true)}
+                  className="text-yellow-400 hover:text-yellow-300 font-bold underline underline-offset-4 transition-colors whitespace-nowrap"
+                >
+                  Create Post Now →
+                </button>
+              </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {SECTIONS.map((section) => {
@@ -431,31 +456,41 @@ function DopeListApp() {
         {selectedCity && selectedSection && (
           <>
             <div className="max-w-7xl mx-auto px-4 py-6">
-              <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-                <button
-                  onClick={() => setSelectedCategory(null)}
-                  className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold whitespace-nowrap transition-all border-2 ${
-                    !selectedCategory
-                      ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-black border-white/40'
-                      : 'bg-white/5 backdrop-blur-sm text-white border-white/10 hover:bg-white/10'
-                  }`}
-                >
-                  <span className="uppercase tracking-wide text-sm">ALL</span>
-                </button>
-                {sectionCategories.map((cat) => (
+              <div className="flex items-center justify-between gap-4 mb-3">
+                <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide flex-1">
                   <button
-                    key={cat.id}
-                    onClick={() => setSelectedCategory(cat)}
+                    onClick={() => setSelectedCategory(null)}
                     className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold whitespace-nowrap transition-all border-2 ${
-                      selectedCategory?.id === cat.id
+                      !selectedCategory
                         ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-black border-white/40'
                         : 'bg-white/5 backdrop-blur-sm text-white border-white/10 hover:bg-white/10'
                     }`}
                   >
-                    <span className="text-xl">{cat.icon}</span>
-                    <span className="uppercase tracking-wide text-sm">{cat.name}</span>
+                    <span className="uppercase tracking-wide text-sm">ALL</span>
                   </button>
-                ))}
+                  {sectionCategories.map((cat) => (
+                    <button
+                      key={cat.id}
+                      onClick={() => setSelectedCategory(cat)}
+                      className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold whitespace-nowrap transition-all border-2 ${
+                        selectedCategory?.id === cat.id
+                          ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-black border-white/40'
+                          : 'bg-white/5 backdrop-blur-sm text-white border-white/10 hover:bg-white/10'
+                      }`}
+                    >
+                      <span className="text-xl">{cat.icon}</span>
+                      <span className="uppercase tracking-wide text-sm">{cat.name}</span>
+                    </button>
+                  ))}
+                </div>
+                {selectedCategory && (
+                  <button
+                    onClick={() => setShowPostModal(true)}
+                    className="text-yellow-400 hover:text-yellow-300 font-bold underline underline-offset-4 transition-colors whitespace-nowrap"
+                  >
+                    Create Post Now →
+                  </button>
+                )}
               </div>
             </div>
 
@@ -575,8 +610,26 @@ function DopeListApp() {
               {filteredPosts.length === 0 && (
                 <div className="text-center py-20">
                   <div className="text-6xl mb-4">🔍</div>
-                  <p className="text-white text-xl font-bold">No listings found</p>
-                  <p className="text-gray-400">Try a different category or search term</p>
+                  <p className="text-white text-xl font-bold mb-2">No listings found</p>
+                  <p className="text-gray-400 mb-6">Try a different category or search term</p>
+                  <button
+                    onClick={() => setShowPostModal(true)}
+                    className="text-yellow-400 hover:text-yellow-300 font-bold underline underline-offset-4 transition-colors text-lg"
+                  >
+                    Create the first post →
+                  </button>
+                </div>
+              )}
+
+              {filteredPosts.length > 0 && filteredPosts.length < 5 && (
+                <div className="text-center py-8 mt-6">
+                  <p className="text-gray-400 mb-3">Only {filteredPosts.length} {filteredPosts.length === 1 ? 'listing' : 'listings'} found</p>
+                  <button
+                    onClick={() => setShowPostModal(true)}
+                    className="text-yellow-400 hover:text-yellow-300 font-bold underline underline-offset-4 transition-colors"
+                  >
+                    Create Post Now →
+                  </button>
                 </div>
               )}
             </div>
