@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { supabase, getSupabaseUrl } from '../lib/supabase';
 import { Upload, X } from 'lucide-react';
 import ContactInfoForm, { ContactInfo } from '../components/ContactInfoForm';
+import { useAuth } from '../hooks/useAuth';
 
 const STRIPE_PAYMENT_LINK = import.meta.env.VITE_STRIPE_PAYMENT_LINK || 'https://buy.stripe.com/test_PLACEHOLDER';
+const STRIPE_POST_PRICE_ID = import.meta.env.VITE_STRIPE_POST_PRICE_ID;
 
 interface Category {
   id: string;
@@ -21,6 +23,7 @@ interface City {
 export function CreatePost() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [cities, setCities] = useState<City[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -134,7 +137,73 @@ export function CreatePost() {
 
       localStorage.setItem('pendingPost', JSON.stringify(draft));
 
-      window.location.href = STRIPE_PAYMENT_LINK;
+      if (STRIPE_POST_PRICE_ID && supabase) {
+        try {
+          const session = await supabase.auth.getSession();
+          const token = session.data.session?.access_token;
+
+          if (!token) {
+            const { data: anonData } = await supabase.auth.signInAnonymously();
+            if (!anonData.session) {
+              throw new Error('Failed to create session');
+            }
+            const anonToken = anonData.session.access_token;
+
+            const checkoutUrl = `${getSupabaseUrl()}/functions/v1/stripe-checkout`;
+            const response = await fetch(checkoutUrl, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${anonToken}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                price_id: STRIPE_POST_PRICE_ID,
+                mode: 'payment',
+                success_url: `${window.location.origin}/success`,
+                cancel_url: `${window.location.origin}/create-post`,
+              }),
+            });
+
+            const data = await response.json();
+            if (data.error) {
+              throw new Error(data.error);
+            }
+
+            window.location.href = data.url;
+            return;
+          }
+
+          const checkoutUrl = `${getSupabaseUrl()}/functions/v1/stripe-checkout`;
+          const response = await fetch(checkoutUrl, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              price_id: STRIPE_POST_PRICE_ID,
+              mode: 'payment',
+              success_url: `${window.location.origin}/success`,
+              cancel_url: `${window.location.origin}/create-post`,
+            }),
+          });
+
+          const data = await response.json();
+          if (data.error) {
+            throw new Error(data.error);
+          }
+
+          window.location.href = data.url;
+        } catch (checkoutError: any) {
+          console.error('Checkout error:', checkoutError);
+          setError(checkoutError.message || 'Failed to create checkout session. Using payment link instead.');
+          setTimeout(() => {
+            window.location.href = STRIPE_PAYMENT_LINK;
+          }, 2000);
+        }
+      } else {
+        window.location.href = STRIPE_PAYMENT_LINK;
+      }
     } catch (err) {
       setError('Failed to process images. Please try again.');
       setSubmitting(false);

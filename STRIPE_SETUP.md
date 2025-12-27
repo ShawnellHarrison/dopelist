@@ -1,31 +1,57 @@
 # Stripe Payment Setup for Post Creation
 
-## Current Issue
-The Stripe Payment Link needs to be configured to redirect back to your application after successful payment.
+## The Problem
+When users create a post and pay, they get stuck on Stripe's page and never return to your app.
 
-## Steps to Fix
+## The Solution (Choose One)
 
-### 1. Access Your Stripe Payment Link
-Go to your Stripe Dashboard:
-- https://dashboard.stripe.com/payment-links
+### ✅ OPTION 1: Stripe Price ID (RECOMMENDED)
 
-### 2. Edit Your Existing Payment Link
-Find the payment link: `https://buy.stripe.com/4gM9AT2mP7MgggogGS8bS0n`
+This method automatically redirects users back to your app after payment.
 
-Click on it to edit the settings.
+#### Steps:
 
-### 3. Configure the Success URL
-**CRITICAL:** Set the "After payment" success URL to:
-```
-https://YOUR_APP_DOMAIN/success
-```
+1. **Go to Stripe Products**
+   - Visit: https://dashboard.stripe.com/products
+   - Click "+ Add product"
 
-Examples:
-- If your app is at `https://myapp.bolt.new`, use: `https://myapp.bolt.new/success`
-- If testing locally at `http://localhost:5173`, use: `http://localhost:5173/success`
+2. **Create the Product**
+   - Name: "Post Listing - 7 Days"
+   - Description: "7-day classified listing"
+   - Pricing: One-time payment
+   - Price: $1.00 USD
 
-### 4. Save Changes
-Save the payment link configuration.
+3. **Copy the Price ID**
+   - After creating, you'll see a Price ID (starts with `price_`)
+   - Example: `price_1AbCdEfGhIjKlMnO`
+
+4. **Add to .env**
+   ```
+   VITE_STRIPE_POST_PRICE_ID=price_YOUR_ACTUAL_PRICE_ID
+   ```
+
+5. **Done!** The app will now automatically redirect users back after payment.
+
+---
+
+### OPTION 2: Payment Link (FALLBACK)
+
+Only use this if you can't use Option 1.
+
+#### Steps:
+
+1. **Access Stripe Payment Links**
+   - Visit: https://dashboard.stripe.com/payment-links
+
+2. **Edit Your Payment Link**
+   - Find: `https://buy.stripe.com/4gM9AT2mP7MgggogGS8bS0n`
+   - Click to edit
+
+3. **Configure Success URL**
+   - Set "After payment" URL to: `https://YOUR_DOMAIN/success`
+   - Example: `https://myapp.bolt.new/success`
+
+4. **Save Changes**
 
 ## How It Works
 
