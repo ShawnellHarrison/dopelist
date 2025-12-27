@@ -599,15 +599,7 @@ function DopeListApp() {
   );
 }
 
-
-function App() {
-  return (
-      `}</style>
-    </div>
-  );
-}
-
-export default function AppWrapper() {
+export default function App() {
   return (
     <AuthProvider>
       <DopeListApp />
