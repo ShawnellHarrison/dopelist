@@ -7,10 +7,34 @@ export function SuccessPage() {
   const navigate = useNavigate();
   const [status, setStatus] = useState<'processing' | 'success' | 'error'>('processing');
   const [error, setError] = useState('');
+  const [postData, setPostData] = useState<{ cityId: string; categoryId: string } | null>(null);
 
   useEffect(() => {
     createPost();
   }, []);
+
+  const handleViewPost = async () => {
+    if (!postData || !supabase) {
+      navigate('/');
+      return;
+    }
+
+    try {
+      const { data: category } = await supabase
+        .from('categories')
+        .select('section')
+        .eq('id', postData.categoryId)
+        .single();
+
+      if (category) {
+        navigate(`/?city=${postData.cityId}&section=${category.section}`);
+      } else {
+        navigate('/');
+      }
+    } catch {
+      navigate('/');
+    }
+  };
 
   const createPost = async () => {
     try {
@@ -80,6 +104,7 @@ export function SuccessPage() {
 
       if (insertError) throw insertError;
 
+      setPostData({ cityId: draft.cityId, categoryId: draft.categoryId });
       localStorage.removeItem('pendingPost');
       setStatus('success');
     } catch (err: any) {
@@ -141,16 +166,16 @@ export function SuccessPage() {
 
           <div className="space-y-3">
             <button
+              onClick={handleViewPost}
+              className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-black py-3 rounded-xl font-bold transition-all"
+            >
+              View Your Post
+            </button>
+            <button
               onClick={() => navigate('/manage')}
               className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white py-3 rounded-xl font-bold transition-all"
             >
               Manage Your Posts
-            </button>
-            <button
-              onClick={() => navigate('/')}
-              className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-black py-3 rounded-xl font-bold transition-all"
-            >
-              View All Posts
             </button>
           </div>
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Search,
   Plus,
@@ -24,6 +24,7 @@ function DopeListApp() {
   const { user, signOut, isAnonymous } = useAuth();
   const navigate = useNavigate();
   const { expiringCount } = useExpiringPosts();
+  const [searchParams] = useSearchParams();
 
   const [cities, setCities] = useState<City[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -43,6 +44,28 @@ function DopeListApp() {
     loadCities();
     loadCategories();
   }, []);
+
+  useEffect(() => {
+    if (cities.length === 0 || categories.length === 0) return;
+
+    const cityParam = searchParams.get('city');
+    const sectionParam = searchParams.get('section');
+    const categoryParam = searchParams.get('category');
+
+    if (cityParam && !selectedCity) {
+      const city = cities.find((c) => c.id === cityParam);
+      if (city) setSelectedCity(city);
+    }
+
+    if (sectionParam && !selectedSection) {
+      setSelectedSection(sectionParam as Section);
+    }
+
+    if (categoryParam && !selectedCategory) {
+      const category = categories.find((c) => c.id === categoryParam);
+      if (category) setSelectedCategory(category);
+    }
+  }, [cities, categories, searchParams, selectedCity, selectedSection, selectedCategory]);
 
   useEffect(() => {
     if (selectedCity && selectedSection) {
