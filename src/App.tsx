@@ -20,7 +20,7 @@ import { useExpiringPosts } from './hooks/useExpiringPosts';
 import type { City, Category, PostWithDetails, Section } from './types';
 
 function DopeListApp() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, isAnonymous } = useAuth();
   const navigate = useNavigate();
   const { expiringCount } = useExpiringPosts();
 
@@ -325,9 +325,9 @@ function DopeListApp() {
                 {user && (
                   <div className="flex items-center gap-2 text-xs flex-wrap">
                     <span className="text-gray-300 truncate max-w-[200px] sm:max-w-none">
-                      {user.is_anonymous ? 'anonymous' : user.email}
+                      {isAnonymous ? 'anonymous' : user.email}
                     </span>
-                    {user.is_anonymous && (
+                    {isAnonymous && (
                       <button
                         onClick={() => {
                           setAuthModalMode('upgrade');

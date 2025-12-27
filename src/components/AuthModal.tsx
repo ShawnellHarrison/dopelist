@@ -232,11 +232,23 @@ export function AuthModal({ open, onClose, mode = 'signin' }: AuthModalProps) {
                   try {
                     setBusy(true);
                     if (isUpgradeMode) {
+                      if (!supabase) throw new Error('Supabase not available');
+
+                      const { data: currentSession } = await supabase.auth.getSession();
+                      if (!currentSession.session?.user?.is_anonymous) {
+                        throw new Error('Not an anonymous user');
+                      }
+
                       if (pw) {
-                        await signUpEmail(email, pw);
+                        const { error } = await supabase.auth.updateUser({
+                          email,
+                          password: pw,
+                        });
+                        if (error) throw error;
                         onClose();
                       } else {
-                        await signInMagicLink(email);
+                        const { error } = await supabase.auth.updateUser({ email });
+                        if (error) throw error;
                         setMagicLinkSent(true);
                       }
                     } else {

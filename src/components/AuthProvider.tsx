@@ -31,21 +31,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let mounted = true;
+    let previousUserId: string | null = null;
 
     async function init() {
       try {
         if (!supabase) return;
         const { data } = await supabase.auth.getSession();
         if (!mounted) return;
-        setSession(data.session ?? null);
-        setUser(data.session?.user ?? null);
 
-        if (!data.session) {
-          await supabase.auth.signInAnonymously();
-          const { data: newData } = await supabase.auth.getSession();
+        if (data.session) {
+          previousUserId = data.session.user.id;
+          setSession(data.session);
+          setUser(data.session.user);
+        } else {
+          const { data: anonData } = await supabase.auth.signInAnonymously();
           if (!mounted) return;
-          setSession(newData.session ?? null);
-          setUser(newData.session?.user ?? null);
+          if (anonData.session) {
+            previousUserId = anonData.session.user.id;
+            setSession(anonData.session);
+            setUser(anonData.session.user);
+          }
         }
       } finally {
         if (mounted) setLoading(false);
@@ -57,12 +62,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!supabase) return;
 
     const { data: sub } = supabase.auth.onAuthStateChange((event, newSession) => {
+      if (!mounted) return;
+
       (async () => {
+        if (event === 'SIGNED_OUT') {
+          const { data: anonData } = await supabase.auth.signInAnonymously();
+          if (!mounted) return;
+          if (anonData.session) {
+            previousUserId = anonData.session.user.id;
+            setSession(anonData.session);
+            setUser(anonData.session.user);
+          }
+          setLoading(false);
+          return;
+        }
+
         if (event === 'SIGNED_IN' && newSession?.user && !newSession.user.is_anonymous) {
-          const previousUserId = user?.id;
           const newUserId = newSession.user.id;
 
-          if (previousUserId && previousUserId !== newUserId && user?.is_anonymous) {
+          if (previousUserId && previousUserId !== newUserId) {
             try {
               const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/merge-anonymous-account`;
               await fetch(apiUrl, {
@@ -80,10 +98,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               console.error('Failed to merge anonymous account:', e);
             }
           }
+          previousUserId = newUserId;
         }
 
-        setSession(newSession ?? null);
-        setUser(newSession?.user ?? null);
+        if (newSession) {
+          setSession(newSession);
+          setUser(newSession.user);
+          previousUserId = newSession.user.id;
+        } else {
+          setSession(null);
+          setUser(null);
+          previousUserId = null;
+        }
         setLoading(false);
       })();
     });
@@ -92,7 +118,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       mounted = false;
       sub.subscription.unsubscribe();
     };
-  }, [user]);
+  }, []);
 
   const api: AuthCtx = useMemo(
     () => ({
@@ -129,7 +155,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (!supabase) throw new Error('Supabase env vars missing');
         const { error } = await supabase.auth.signOut();
         if (error) throw error;
-        await supabase.auth.signInAnonymously();
       },
     }),
     [user, session, loading, isAnonymous]
