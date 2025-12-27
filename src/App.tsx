@@ -591,12 +591,28 @@ function DopeListApp() {
         @keyframes slideIn {
           from { opacity: 0; transform: translateY(20px); }
           to { opacity: 1; transform: translateY(0); }
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Header } from './components/layout/Header';
+import { LoginPage } from './pages/LoginPage';
+import { SignupPage } from './pages/SignupPage';
+import { ProductsPage } from './pages/ProductsPage';
+import { SuccessPage } from './pages/SuccessPage';
+import { HomePage } from './pages/HomePage';
         }
 
         .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
-    </div>
+    <Router>
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/products" element={<ProductsPage />} />
+          <Route path="/success" element={<SuccessPage />} />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 
