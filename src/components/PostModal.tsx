@@ -210,7 +210,7 @@ export function PostModal({ open, onClose, city, categories, onPostCreated, onSh
             <h2 className="text-3xl font-black text-yellow-400 mb-2" style={{ fontFamily: 'Impact, sans-serif' }}>
               $1 • 7 DAYS • {city?.name?.toUpperCase()}
             </h2>
-            <p className="text-gray-300 mb-6">Secure your spot on the master network. Pay $1, post for 7 days.</p>
+            <p className="text-gray-300 mb-6">Pay first, then create your listing.</p>
 
             <div className="space-y-3">
               <button
@@ -377,9 +377,9 @@ export function PostModal({ open, onClose, city, categories, onPostCreated, onSh
           <div className="p-8 text-center">
             <div className="text-6xl mb-6 animate-spin">⚡</div>
             <h2 className="text-3xl font-black text-yellow-400 mb-2" style={{ fontFamily: 'Impact, sans-serif' }}>
-              PUBLISHING TO THE NETWORK...
+              CREATING YOUR POST...
             </h2>
-            <p className="text-gray-300">Your post will be live in seconds.</p>
+            <p className="text-gray-300">Uploading images and publishing...</p>
           </div>
         )}
       </div>
