@@ -28,6 +28,13 @@ export interface Post {
   location: string;
   images: string[];
   contact_email: string | null;
+  contact_info?: {
+    phone?: { value: string; visible: boolean };
+    email?: { value: string; visible: boolean };
+    whatsapp?: { value: string; visible: boolean };
+    telegram?: { value: string; visible: boolean };
+    other?: { value: string; visible: boolean };
+  };
   stripe_payment_id: string;
   stripe_session_id?: string;
   votes: number;

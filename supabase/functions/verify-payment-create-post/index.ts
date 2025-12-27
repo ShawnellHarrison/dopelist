@@ -92,6 +92,7 @@ Deno.serve(async (req: Request) => {
         location: postData.location,
         images: postData.images || [],
         contact_email: postData.contactEmail || null,
+        contact_info: postData.contactInfo || {},
         stripe_payment_id: paymentIntentId,
         stripe_session_id: sessionId,
         votes: 0,

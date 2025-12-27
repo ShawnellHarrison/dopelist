@@ -71,6 +71,7 @@ export function SuccessPage() {
         price: draft.price || null,
         location: draft.location || '',
         images: imageUrls,
+        contact_info: draft.contactInfo || {},
         expires_at: expiresAt.toISOString(),
         is_active: true,
         stripe_payment_id: 'payment_link_' + Date.now(),

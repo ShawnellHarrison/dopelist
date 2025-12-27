@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Upload, X } from 'lucide-react';
+import ContactInfoForm, { ContactInfo } from '../components/ContactInfoForm';
 
 const STRIPE_PAYMENT_LINK = import.meta.env.VITE_STRIPE_PAYMENT_LINK || 'https://buy.stripe.com/test_PLACEHOLDER';
 
@@ -36,6 +37,7 @@ export function CreatePost() {
   const [location, setLocation] = useState('');
   const [images, setImages] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [contactInfo, setContactInfo] = useState<ContactInfo>({});
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -126,6 +128,7 @@ export function CreatePost() {
         cityId,
         categoryId,
         images: imageDataUrls,
+        contactInfo,
         createdAt: Date.now(),
       };
 
@@ -304,6 +307,14 @@ export function CreatePost() {
                   />
                 </label>
               </div>
+            </div>
+
+            <div className="bg-white/5 border-2 border-white/20 rounded-xl p-6">
+              <ContactInfoForm
+                value={contactInfo}
+                onChange={setContactInfo}
+                showVisibilityToggles={true}
+              />
             </div>
 
             <button

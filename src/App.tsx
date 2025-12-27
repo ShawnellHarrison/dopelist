@@ -14,6 +14,7 @@ import { AuthProvider, useAuth } from './components/AuthProvider';
 import { AuthModal } from './components/AuthModal';
 import { Comments } from './components/Comments';
 import { FloatingManageButton } from './components/FloatingManageButton';
+import ContactInfoDisplay from './components/ContactInfoDisplay';
 import { supabase, getSupabaseUrl } from './lib/supabase';
 import { SECTIONS, REACTIONS, formatTimeLeft } from './lib/constants';
 import { useExpiringPosts } from './hooks/useExpiringPosts';
@@ -616,6 +617,16 @@ function DopeListApp() {
 
                             {post.comments_close_at && (
                               <Comments postId={post.id} commentsCloseAt={post.comments_close_at} />
+                            )}
+
+                            {post.contact_info && Object.keys(post.contact_info).length > 0 && (
+                              <div className="mt-3">
+                                <ContactInfoDisplay
+                                  contactInfo={post.contact_info}
+                                  postId={post.id}
+                                  isOwnPost={user?.id === post.user_id}
+                                />
+                              </div>
                             )}
                           </div>
                         </div>
