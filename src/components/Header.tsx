@@ -9,9 +9,11 @@
  
  export function Header() {
    const { user, signOut } = useAuth();
+ }
 +  const navigate = useNavigate();
  
    return (
+   )
 @@ .. @@
          <div className="flex items-center space-x-4">
            {user ? (
@@ -20,6 +22,8 @@
                <Link
                  to="/post"
                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+           )
+           }
 @@ .. @@
                  <Plus className="w-4 h-4" />
                  Post Ad
