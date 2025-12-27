@@ -11,7 +11,8 @@ import {
 import { AuthProvider, useAuth } from './components/AuthProvider';
 import { AuthModal } from './components/AuthModal';
 import { PostModal } from './components/PostModal';
-import { supabase } from './lib/supabase';
+import { Comments } from './components/Comments';
+import { supabase, getSupabaseUrl } from './lib/supabase';
 import { SECTIONS, REACTIONS, formatTimeLeft } from './lib/constants';
 import type { City, Category, PostWithDetails, Section } from './types';
 
@@ -136,18 +137,34 @@ function DopeListApp() {
   };
 
   const handleVote = async (postId: string, direction: 'up' | 'down') => {
-    if (!supabase) return;
-    const post = posts.find((p) => p.id === postId);
-    if (!post) return;
+    if (!supabase || !user) return;
 
-    const newVotes = post.votes + (direction === 'up' ? 1 : -1);
-    await supabase.from('posts').update({ votes: newVotes }).eq('id', postId);
+    try {
+      const voteValue = direction === 'up' ? 1 : -1;
+      const apiUrl = `${getSupabaseUrl()}/functions/v1/manage-votes`;
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          postId,
+          voteValue,
+          sessionId: localStorage.getItem('session_id') || null,
+        }),
+      });
 
-    setPosts((prev) =>
-      prev
-        .map((p) => (p.id === postId ? { ...p, votes: newVotes } : p))
-        .sort((a, b) => b.votes - a.votes)
-    );
+      const data = await response.json();
+      if (data.error) {
+        console.error('Vote error:', data.error);
+        return;
+      }
+
+      loadPosts();
+    } catch (error) {
+      console.error('Failed to vote:', error);
+    }
   };
 
   const handleReaction = async (postId: string, reactionKey: string) => {
@@ -543,6 +560,10 @@ function DopeListApp() {
                                 </button>
                               ))}
                             </div>
+
+                            {post.comments_close_at && (
+                              <Comments postId={post.id} commentsCloseAt={post.comments_close_at} />
+                            )}
                           </div>
                         </div>
                       </div>

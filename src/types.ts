@@ -29,6 +29,7 @@ export interface Post {
   images: string[];
   contact_email: string | null;
   stripe_payment_id: string;
+  stripe_session_id?: string;
   votes: number;
   reactions: {
     hot: number;
@@ -39,6 +40,7 @@ export interface Post {
   };
   created_at: string;
   expires_at: string;
+  comments_close_at?: string;
   is_active: boolean;
 }
 

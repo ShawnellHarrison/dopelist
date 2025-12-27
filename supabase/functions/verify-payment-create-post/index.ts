@@ -38,6 +38,23 @@ Deno.serve(async (req: Request) => {
 
     const { sessionId, postData } = await req.json();
 
+    // Check if session was already used
+    const { data: existingPost } = await supabase
+      .from('posts')
+      .select('id')
+      .eq('stripe_session_id', sessionId)
+      .maybeSingle();
+
+    if (existingPost) {
+      return new Response(
+        JSON.stringify({ error: 'Payment session already used' }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
     let paymentIntentId = sessionId;
 
     if (stripeSecretKey && !sessionId.startsWith('demo_')) {
@@ -76,6 +93,7 @@ Deno.serve(async (req: Request) => {
         images: postData.images || [],
         contact_email: postData.contactEmail || null,
         stripe_payment_id: paymentIntentId,
+        stripe_session_id: sessionId,
         votes: 0,
         reactions: { hot: 0, interested: 0, watching: 0, question: 0, deal: 0 },
         expires_at: expiresAt.toISOString(),
