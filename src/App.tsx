@@ -30,6 +30,7 @@ function DopeListApp() {
   const [searchQuery, setSearchQuery] = useState('');
 
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState<'signin' | 'upgrade'>('signin');
 
   const [loading, setLoading] = useState(true);
 
@@ -300,7 +301,10 @@ function DopeListApp() {
                       </span>
                       {user.is_anonymous && (
                         <button
-                          onClick={() => setShowAuthModal(true)}
+                          onClick={() => {
+                            setAuthModalMode('upgrade');
+                            setShowAuthModal(true);
+                          }}
                           className="text-yellow-400 hover:text-yellow-300 font-bold underline underline-offset-4 transition-colors text-xs"
                         >
                           upgrade account
@@ -626,7 +630,7 @@ function DopeListApp() {
       <AuthModal
         open={showAuthModal}
         onClose={() => setShowAuthModal(false)}
-        mode="signin"
+        mode={authModalMode}
       />
 
       <style>{`

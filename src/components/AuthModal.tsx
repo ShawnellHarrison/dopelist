@@ -10,11 +10,12 @@ interface AuthModalProps {
 }
 
 export function AuthModal({ open, onClose, mode = 'signin' }: AuthModalProps) {
-  const { signInAnon, signInEmail, signUpEmail } = useAuth();
-  const [tab, setTab] = useState<'signin' | 'signup'>('signin');
+  const { signInAnon, signInEmail, signUpEmail, signInMagicLink } = useAuth();
+  const [tab, setTab] = useState<'signin' | 'signup' | 'magiclink'>('signin');
   const [email, setEmail] = useState('');
   const [pw, setPw] = useState('');
   const [busy, setBusy] = useState(false);
+  const [magicLinkSent, setMagicLinkSent] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -22,6 +23,7 @@ export function AuthModal({ open, onClose, mode = 'signin' }: AuthModalProps) {
     setEmail('');
     setPw('');
     setBusy(false);
+    setMagicLinkSent(false);
   }, [open, mode]);
 
   if (!open) return null;
@@ -50,29 +52,6 @@ export function AuthModal({ open, onClose, mode = 'signin' }: AuthModalProps) {
 
           {!isUpgradeMode && (
             <>
-              <div className="mt-6 grid grid-cols-2 gap-2">
-                <button
-                  onClick={() => setTab('signin')}
-                  className={`py-3 rounded-xl font-bold border-2 transition-all ${
-                    tab === 'signin'
-                      ? 'bg-white/15 border-yellow-400 text-white shadow-[0_0_20px_rgba(234,179,8,0.4)]'
-                      : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10 hover:border-white/20'
-                  }`}
-                >
-                  Sign In
-                </button>
-                <button
-                  onClick={() => setTab('signup')}
-                  className={`py-3 rounded-xl font-bold border-2 transition-all ${
-                    tab === 'signup'
-                      ? 'bg-white/15 border-yellow-400 text-white shadow-[0_0_20px_rgba(234,179,8,0.4)]'
-                      : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10 hover:border-white/20'
-                  }`}
-                >
-                  Sign Up
-                </button>
-              </div>
-
               <div className="mt-4 space-y-3">
                 <button
                   disabled={busy}
@@ -87,39 +66,135 @@ export function AuthModal({ open, onClose, mode = 'signin' }: AuthModalProps) {
                       setBusy(false);
                     }
                   }}
-                  className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-black py-4 rounded-xl text-lg border-2 border-white/20 disabled:opacity-60 transition-all hover:shadow-[0_0_25px_rgba(6,182,212,0.5)]"
+                  className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-black py-5 rounded-xl text-lg border-2 border-white/20 disabled:opacity-60 transition-all hover:shadow-[0_0_25px_rgba(6,182,212,0.5)]"
                 >
-                  {busy ? 'SIGNING IN...' : '⚡ CONTINUE ANONYMOUSLY'}
+                  {busy ? 'SIGNING IN...' : '⚡ CONTINUE AS GUEST'}
                 </button>
 
-                <div className="h-px bg-white/10 my-2" />
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-white/20"></div>
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-4 bg-white/5 text-gray-400 rounded-full">or sign in with</span>
+                  </div>
+                </div>
               </div>
+
+              <div className="mt-4 grid grid-cols-3 gap-2">
+                <button
+                  onClick={() => { setTab('magiclink'); setMagicLinkSent(false); }}
+                  className={`py-3 rounded-xl font-bold border-2 transition-all text-sm ${
+                    tab === 'magiclink'
+                      ? 'bg-white/15 border-yellow-400 text-white shadow-[0_0_20px_rgba(234,179,8,0.4)]'
+                      : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10 hover:border-white/20'
+                  }`}
+                >
+                  Magic Link
+                </button>
+                <button
+                  onClick={() => setTab('signin')}
+                  className={`py-3 rounded-xl font-bold border-2 transition-all text-sm ${
+                    tab === 'signin'
+                      ? 'bg-white/15 border-yellow-400 text-white shadow-[0_0_20px_rgba(234,179,8,0.4)]'
+                      : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10 hover:border-white/20'
+                  }`}
+                >
+                  Password
+                </button>
+                <button
+                  onClick={() => setTab('signup')}
+                  className={`py-3 rounded-xl font-bold border-2 transition-all text-sm ${
+                    tab === 'signup'
+                      ? 'bg-white/15 border-yellow-400 text-white shadow-[0_0_20px_rgba(234,179,8,0.4)]'
+                      : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10 hover:border-white/20'
+                  }`}
+                >
+                  Sign Up
+                </button>
+              </div>
+
+              <div className="h-px bg-white/10 my-4" />
             </>
           )}
 
           <div className={isUpgradeMode ? 'mt-6 space-y-3' : 'space-y-3'}>
-            <div>
-              <label className="block text-white font-bold mb-2 text-sm uppercase tracking-wide">Email</label>
-              <input
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@email.com"
-                className="w-full bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/50 transition-all"
-              />
-            </div>
+            {tab === 'magiclink' && !isUpgradeMode ? (
+              magicLinkSent ? (
+                <div className="bg-green-500/20 border-2 border-green-400/50 rounded-xl p-6 text-center">
+                  <div className="text-4xl mb-3">📧</div>
+                  <h3 className="text-xl font-bold text-white mb-2">Check your email!</h3>
+                  <p className="text-gray-300 text-sm">
+                    We've sent a magic link to <strong>{email}</strong>. Click the link in your email to sign in.
+                  </p>
+                  <button
+                    onClick={() => setMagicLinkSent(false)}
+                    className="mt-4 text-sm text-yellow-400 hover:text-yellow-300 font-bold"
+                  >
+                    Send another link
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div>
+                    <label className="block text-white font-bold mb-2 text-sm uppercase tracking-wide">Email</label>
+                    <input
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="you@email.com"
+                      type="email"
+                      className="w-full bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/50 transition-all"
+                    />
+                  </div>
+                  <button
+                    disabled={busy || !email}
+                    onClick={async () => {
+                      try {
+                        setBusy(true);
+                        await signInMagicLink(email);
+                        setMagicLinkSent(true);
+                      } catch (e: any) {
+                        alert(e?.message || 'Failed to send magic link');
+                      } finally {
+                        setBusy(false);
+                      }
+                    }}
+                    className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-black py-4 rounded-xl text-lg border-2 border-white/20 disabled:opacity-60 transition-all hover:shadow-[0_0_25px_rgba(168,85,247,0.5)]"
+                  >
+                    {busy ? 'SENDING...' : 'SEND MAGIC LINK'}
+                  </button>
+                  <p className="text-xs text-gray-400 mt-2">
+                    No password needed. Just click the link in your email to sign in instantly.
+                  </p>
+                </>
+              )
+            ) : (
+              <>
+                <div>
+                  <label className="block text-white font-bold mb-2 text-sm uppercase tracking-wide">Email</label>
+                  <input
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@email.com"
+                    type="email"
+                    className="w-full bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/50 transition-all"
+                  />
+                </div>
 
-            <div>
-              <label className="block text-white font-bold mb-2 text-sm uppercase tracking-wide">Password</label>
-              <input
-                type="password"
-                value={pw}
-                onChange={(e) => setPw(e.target.value)}
-                placeholder="••••••••"
-                className="w-full bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/50 transition-all"
-              />
-            </div>
+                <div>
+                  <label className="block text-white font-bold mb-2 text-sm uppercase tracking-wide">Password</label>
+                  <input
+                    type="password"
+                    value={pw}
+                    onChange={(e) => setPw(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/50 transition-all"
+                  />
+                </div>
+              </>
+            )}
 
-            {tab === 'signin' && !isUpgradeMode ? (
+            {tab === 'signin' && !isUpgradeMode && (
               <button
                 disabled={busy}
                 onClick={async () => {
@@ -141,7 +216,9 @@ export function AuthModal({ open, onClose, mode = 'signin' }: AuthModalProps) {
                   </span>
                 )}
               </button>
-            ) : (
+            )}
+
+            {(tab === 'signup' || isUpgradeMode) && tab !== 'magiclink' && (
               <button
                 disabled={busy}
                 onClick={async () => {
