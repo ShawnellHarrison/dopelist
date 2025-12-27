@@ -240,11 +240,11 @@ function DopeListApp() {
 
       <div className="relative">
         <header className="border-b-2 border-yellow-400/30 bg-black/60 backdrop-blur-xl sticky top-0 z-50 shadow-[0_10px_40px_rgba(0,0,0,0.5)]">
-          <div className="max-w-7xl mx-auto px-4 py-6">
-            <div className="flex items-center justify-between gap-4 mb-4">
-              <div className="min-w-0">
+          <div className="max-w-7xl mx-auto px-4 py-4 md:py-6">
+            <div className="flex flex-col gap-3 mb-4">
+              <div className="flex items-start justify-between gap-2">
                 <h1
-                  className="text-5xl font-black tracking-tight leading-none cursor-pointer"
+                  className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-none cursor-pointer"
                   onClick={() => {
                     setSelectedCity(null);
                     setSelectedSection(null);
@@ -259,9 +259,22 @@ function DopeListApp() {
                   </span>
                 </h1>
 
-                <div className="mt-2 flex items-center gap-3 text-sm flex-wrap">
+                {selectedCity && (
+                  <button
+                    onClick={() => navigate('/create-post')}
+                    className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white px-4 md:px-6 py-2 md:py-3 rounded-xl font-bold flex items-center gap-2 transform hover:scale-105 transition-all shadow-lg border-2 border-white/20 whitespace-nowrap text-sm md:text-base flex-shrink-0"
+                  >
+                    <Plus size={18} className="md:w-5 md:h-5" />
+                    <span className="hidden sm:inline">POST FOR $1</span>
+                    <span className="sm:hidden">POST</span>
+                  </button>
+                )}
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-2 text-sm flex-wrap">
                   <span className="text-gray-300 flex items-center gap-2">
-                    <MapPin size={16} className="text-cyan-400" />
+                    <MapPin size={16} className="text-cyan-400 flex-shrink-0" />
                     {selectedCity ? (
                       <>
                         <span className="text-cyan-300 font-bold uppercase tracking-wider">
@@ -285,51 +298,40 @@ function DopeListApp() {
 
                   {selectedSection && (
                     <>
-                      <span className="text-gray-500">•</span>
-                      <span className="text-purple-400 font-bold uppercase">
+                      <span className="text-gray-500 hidden sm:inline">•</span>
+                      <span className="text-purple-400 font-bold uppercase hidden sm:inline">
                         {SECTIONS.find((s) => s.id === selectedSection)?.name}
                       </span>
                     </>
                   )}
-
-                  <span className="text-gray-500">•</span>
-
-                  {user ? (
-                    <div className="flex items-center gap-3">
-                      <span className="text-gray-300 text-xs">
-                        {user.is_anonymous ? 'anonymous' : user.email}
-                      </span>
-                      {user.is_anonymous && (
-                        <button
-                          onClick={() => {
-                            setAuthModalMode('upgrade');
-                            setShowAuthModal(true);
-                          }}
-                          className="text-yellow-400 hover:text-yellow-300 font-bold underline underline-offset-4 transition-colors text-xs"
-                        >
-                          upgrade account
-                        </button>
-                      )}
-                      <button
-                        onClick={() => signOut().catch((e: any) => alert(e?.message))}
-                        className="text-gray-300 hover:text-white font-bold inline-flex items-center gap-2 transition-colors"
-                      >
-                        <LogOut size={16} /> sign out
-                      </button>
-                    </div>
-                  ) : null}
                 </div>
-              </div>
 
-              {selectedCity && (
-                <button
-                  onClick={() => navigate('/create-post')}
-                  className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 transform hover:scale-105 transition-all shadow-lg border-2 border-white/20 whitespace-nowrap"
-                >
-                  <Plus size={20} />
-                  POST FOR $1
-                </button>
-              )}
+                {user && (
+                  <div className="flex items-center gap-2 text-xs flex-wrap">
+                    <span className="text-gray-300 truncate max-w-[200px] sm:max-w-none">
+                      {user.is_anonymous ? 'anonymous' : user.email}
+                    </span>
+                    {user.is_anonymous && (
+                      <button
+                        onClick={() => {
+                          setAuthModalMode('upgrade');
+                          setShowAuthModal(true);
+                        }}
+                        className="text-yellow-400 hover:text-yellow-300 font-bold underline underline-offset-4 transition-colors flex-shrink-0"
+                      >
+                        upgrade account
+                      </button>
+                    )}
+                    <button
+                      onClick={() => signOut().catch((e: any) => alert(e?.message))}
+                      className="text-gray-300 hover:text-white font-bold inline-flex items-center gap-1 transition-colors flex-shrink-0"
+                    >
+                      <LogOut size={14} />
+                      <span>sign out</span>
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
 
             {selectedCity && (
@@ -348,21 +350,21 @@ function DopeListApp() {
         </header>
 
         {!selectedCity && (
-          <div className="max-w-7xl mx-auto px-4 py-10 pb-16">
-            <div className="bg-white/10 backdrop-blur-xl border-2 border-white/20 rounded-2xl p-6 md:p-8 shadow-[0_0_50px_rgba(0,0,0,0.5)]">
-              <div className="flex items-center justify-between mb-6">
+          <div className="max-w-7xl mx-auto px-4 py-6 md:py-10 pb-16">
+            <div className="bg-white/10 backdrop-blur-xl border-2 border-white/20 rounded-2xl p-4 md:p-8 shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
                 <div>
                   <h2
-                    className="text-3xl md:text-4xl font-black text-white mb-2"
+                    className="text-2xl md:text-4xl font-black text-white mb-1 md:mb-2"
                     style={{ fontFamily: 'Impact, sans-serif' }}
                   >
                     Choose your city
                   </h2>
-                  <p className="text-gray-300">Browse classifieds in your area</p>
+                  <p className="text-gray-300 text-sm md:text-base">Browse classifieds in your area</p>
                 </div>
                 <button
                   onClick={() => navigate('/create-post')}
-                  className="text-yellow-400 hover:text-yellow-300 font-bold underline underline-offset-4 transition-colors whitespace-nowrap"
+                  className="text-yellow-400 hover:text-yellow-300 font-bold underline underline-offset-4 transition-colors whitespace-nowrap self-start sm:self-auto text-sm md:text-base"
                 >
                   Create Post Now →
                 </button>
@@ -395,27 +397,27 @@ function DopeListApp() {
         )}
 
         {selectedCity && !selectedSection && (
-          <div className="max-w-7xl mx-auto px-4 py-10">
-            <div className="bg-white/10 backdrop-blur-xl border-2 border-white/20 rounded-2xl p-6 md:p-8 shadow-[0_0_50px_rgba(0,0,0,0.5)]">
-              <div className="flex items-center justify-between mb-6">
+          <div className="max-w-7xl mx-auto px-4 py-6 md:py-10">
+            <div className="bg-white/10 backdrop-blur-xl border-2 border-white/20 rounded-2xl p-4 md:p-8 shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
                 <div>
                   <h2
-                    className="text-3xl md:text-4xl font-black text-white mb-2"
+                    className="text-2xl md:text-4xl font-black text-white mb-1 md:mb-2"
                     style={{ fontFamily: 'Impact, sans-serif' }}
                   >
                     Browse by section
                   </h2>
-                  <p className="text-gray-300">What are you looking for?</p>
+                  <p className="text-gray-300 text-sm md:text-base">What are you looking for?</p>
                 </div>
                 <button
                   onClick={() => navigate('/create-post')}
-                  className="text-yellow-400 hover:text-yellow-300 font-bold underline underline-offset-4 transition-colors whitespace-nowrap"
+                  className="text-yellow-400 hover:text-yellow-300 font-bold underline underline-offset-4 transition-colors whitespace-nowrap self-start sm:self-auto text-sm md:text-base"
                 >
                   Create Post Now →
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
                 {SECTIONS.map((section) => {
                   const count = posts.filter((p) =>
                     categories.some((c) => c.id === p.category_id && c.section === section.id)
@@ -425,12 +427,12 @@ function DopeListApp() {
                     <button
                       key={section.id}
                       onClick={() => handleSectionSelect(section.id)}
-                      className={`text-left bg-gradient-to-r ${section.color} p-6 rounded-2xl border-2 border-white/20 hover:border-white/40 transition-all transform hover:-translate-y-1 hover:shadow-[0_0_30px_rgba(234,179,8,0.3)]`}
+                      className={`text-left bg-gradient-to-r ${section.color} p-4 md:p-6 rounded-2xl border-2 border-white/20 hover:border-white/40 transition-all transform hover:-translate-y-1 hover:shadow-[0_0_30px_rgba(234,179,8,0.3)] active:scale-95`}
                     >
                       <div className="flex items-center gap-3 mb-2">
-                        <span className="text-4xl">{section.emoji}</span>
+                        <span className="text-3xl md:text-4xl">{section.emoji}</span>
                         <div>
-                          <div className="text-white font-black text-xl uppercase tracking-wide">
+                          <div className="text-white font-black text-lg md:text-xl uppercase tracking-wide">
                             {section.name}
                           </div>
                         </div>
@@ -492,16 +494,16 @@ function DopeListApp() {
                     className="group bg-white/10 backdrop-blur-xl border-2 border-white/20 rounded-2xl overflow-hidden hover:border-yellow-400 transition-all transform hover:-translate-y-1"
                     style={{ animation: `slideIn 0.5s ease-out ${index * 0.08}s both` }}
                   >
-                    <div className="flex gap-4 p-6">
-                      <div className="flex flex-col items-center gap-2 bg-black/30 backdrop-blur-sm rounded-xl p-3 border border-white/10">
+                    <div className="flex gap-2 md:gap-4 p-3 md:p-6">
+                      <div className="flex flex-col items-center gap-1 md:gap-2 bg-black/30 backdrop-blur-sm rounded-xl p-2 md:p-3 border border-white/10 flex-shrink-0">
                         <button
                           onClick={() => handleVote(post.id, 'up')}
                           className="text-gray-400 hover:text-green-400 transition-colors transform hover:scale-125 active:scale-95"
                         >
-                          <ChevronUp size={24} strokeWidth={3} />
+                          <ChevronUp size={20} className="md:w-6 md:h-6" strokeWidth={3} />
                         </button>
                         <span
-                          className="font-black text-xl bg-gradient-to-b from-yellow-400 to-orange-500 text-transparent bg-clip-text"
+                          className="font-black text-base md:text-xl bg-gradient-to-b from-yellow-400 to-orange-500 text-transparent bg-clip-text"
                           style={{ fontFamily: 'Impact, sans-serif' }}
                         >
                           {post.votes}
@@ -510,50 +512,50 @@ function DopeListApp() {
                           onClick={() => handleVote(post.id, 'down')}
                           className="text-gray-400 hover:text-red-400 transition-colors transform hover:scale-125 active:scale-95"
                         >
-                          <ChevronDown size={24} strokeWidth={3} />
+                          <ChevronDown size={20} className="md:w-6 md:h-6" strokeWidth={3} />
                         </button>
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-start gap-4">
-                          <div className="flex-shrink-0">
+                        <div className="flex items-start gap-2 md:gap-4">
+                          <div className="flex-shrink-0 hidden sm:block">
                             {post.images?.length ? (
                               <img
                                 src={post.images[0]}
                                 alt=""
-                                className="w-20 h-20 rounded-xl object-cover border-2 border-white/20 group-hover:border-yellow-400/50 transition-all"
+                                className="w-16 md:w-20 h-16 md:h-20 rounded-xl object-cover border-2 border-white/20 group-hover:border-yellow-400/50 transition-all"
                               />
                             ) : (
-                              <div className="w-20 h-20 rounded-xl bg-black/30 backdrop-blur-sm border-2 border-white/10 flex items-center justify-center text-gray-500">
-                                <ImageIcon size={22} />
+                              <div className="w-16 md:w-20 h-16 md:h-20 rounded-xl bg-black/30 backdrop-blur-sm border-2 border-white/10 flex items-center justify-center text-gray-500">
+                                <ImageIcon size={18} className="md:w-6 md:h-6" />
                               </div>
                             )}
                           </div>
 
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-start gap-3 mb-1">
-                              <span className="text-3xl flex-shrink-0 transform group-hover:scale-110 transition-transform">
+                            <div className="flex items-start gap-2 md:gap-3 mb-1">
+                              <span className="text-2xl md:text-3xl flex-shrink-0 transform group-hover:scale-110 transition-transform">
                                 {post.category?.icon || '📋'}
                               </span>
                               <div className="min-w-0">
                                 <h3
-                                  className="text-xl font-bold text-white group-hover:text-yellow-400 transition-colors truncate"
+                                  className="text-base md:text-xl font-bold text-white group-hover:text-yellow-400 transition-colors truncate"
                                   style={{ fontFamily: '"Space Mono", monospace' }}
                                   title={post.title}
                                 >
                                   {post.title}
                                 </h3>
 
-                                <div className="mt-1 flex flex-wrap gap-3 items-center text-sm">
+                                <div className="mt-1 flex flex-wrap gap-1.5 md:gap-3 items-center text-xs md:text-sm">
                                   {post.price && (
-                                    <span className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 py-1.5 rounded-full font-bold border-2 border-white/20">
+                                    <span className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-2 md:px-4 py-1 md:py-1.5 rounded-full font-bold border-2 border-white/20 text-xs md:text-sm">
                                       {post.price}
                                     </span>
                                   )}
-                                  <span className="text-cyan-400 font-semibold flex items-center gap-1">
+                                  <span className="text-cyan-400 font-semibold flex items-center gap-1 text-xs md:text-sm">
                                     📍 {post.location}
                                   </span>
-                                  <span className="text-gray-400 text-xs uppercase tracking-wider">
+                                  <span className="text-gray-400 text-xs uppercase tracking-wider hidden sm:inline">
                                     {post.category?.name}
                                   </span>
                                   <span className="text-gray-400 text-xs uppercase tracking-wider">
@@ -563,23 +565,23 @@ function DopeListApp() {
                               </div>
                             </div>
 
-                            <p className="text-gray-300 text-sm leading-relaxed mt-2">
+                            <p className="text-gray-300 text-xs md:text-sm leading-relaxed mt-2 line-clamp-2 md:line-clamp-none">
                               {post.description}
                             </p>
 
-                            <div className="mt-3 flex flex-wrap gap-2 items-center">
-                              <span className="text-gray-400 text-xs uppercase tracking-wider mr-2">
+                            <div className="mt-2 md:mt-3 flex flex-wrap gap-1.5 md:gap-2 items-center">
+                              <span className="text-gray-400 text-xs uppercase tracking-wider mr-1 hidden sm:inline">
                                 reactions
                               </span>
                               {REACTIONS.map((r) => (
                                 <button
                                   key={r.key}
                                   onClick={() => handleReaction(post.id, r.key)}
-                                  className="px-3 py-1.5 rounded-full bg-black/30 backdrop-blur-sm hover:bg-black/40 border border-white/10 hover:border-yellow-400/50 text-white font-bold transition-all active:scale-95"
+                                  className="px-2 md:px-3 py-1 md:py-1.5 rounded-full bg-black/30 backdrop-blur-sm hover:bg-black/40 border border-white/10 hover:border-yellow-400/50 text-white font-bold transition-all active:scale-95 text-xs md:text-sm"
                                   title={r.label}
                                 >
-                                  <span className="mr-1">{r.emoji}</span>
-                                  <span className="text-sm">
+                                  <span className="mr-0.5 md:mr-1">{r.emoji}</span>
+                                  <span className="text-xs md:text-sm">
                                     {post.reactions?.[r.key as keyof typeof post.reactions] || 0}
                                   </span>
                                 </button>
