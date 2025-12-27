@@ -36,6 +36,8 @@ export function CreatePost() {
   const [location, setLocation] = useState('');
   const [images, setImages] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -77,35 +79,63 @@ export function CreatePost() {
   };
 
   const handleSubmit = async () => {
-    if (!title.trim() || !description.trim() || !cityId || !categoryId) {
-      alert('Please fill in all required fields');
+    setError('');
+
+    if (!cityId) {
+      setError('Please select a city');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
 
-    const imageDataUrls = await Promise.all(
-      images.map((file) => {
-        return new Promise<string>((resolve) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result as string);
-          reader.readAsDataURL(file);
-        });
-      })
-    );
+    if (!categoryId) {
+      setError('Please select a category');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
 
-    const draft = {
-      title,
-      price,
-      description,
-      location,
-      cityId,
-      categoryId,
-      images: imageDataUrls,
-      createdAt: Date.now(),
-    };
+    if (!title.trim()) {
+      setError('Please enter a title');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
 
-    localStorage.setItem('pendingPost', JSON.stringify(draft));
+    if (!description.trim()) {
+      setError('Please enter a description');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
 
-    window.location.href = STRIPE_PAYMENT_LINK;
+    setSubmitting(true);
+
+    try {
+      const imageDataUrls = await Promise.all(
+        images.map((file) => {
+          return new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.readAsDataURL(file);
+          });
+        })
+      );
+
+      const draft = {
+        title,
+        price,
+        description,
+        location,
+        cityId,
+        categoryId,
+        images: imageDataUrls,
+        createdAt: Date.now(),
+      };
+
+      localStorage.setItem('pendingPost', JSON.stringify(draft));
+
+      window.location.href = STRIPE_PAYMENT_LINK;
+    } catch (err) {
+      setError('Failed to process images. Please try again.');
+      setSubmitting(false);
+    }
   };
 
   if (loading) {
@@ -117,9 +147,9 @@ export function CreatePost() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-purple-950 to-black py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-black via-purple-950 to-black py-6 md:py-12 px-4">
       <div className="max-w-2xl mx-auto">
-        <div className="bg-white/10 backdrop-blur-xl border-2 border-white/20 rounded-2xl p-8 shadow-lg">
+        <div className="bg-white/10 backdrop-blur-xl border-2 border-white/20 rounded-2xl p-4 md:p-8 shadow-lg">
           <button
             onClick={() => navigate('/')}
             className="text-gray-300 hover:text-white mb-6 transition-colors"
@@ -127,10 +157,16 @@ export function CreatePost() {
             ← Back to Home
           </button>
 
-          <h1 className="text-3xl font-black text-white mb-2">Create a Post</h1>
-          <p className="text-gray-300 mb-8">
+          <h1 className="text-2xl md:text-3xl font-black text-white mb-2">Create a Post</h1>
+          <p className="text-gray-300 mb-6 md:mb-8 text-sm md:text-base">
             Fill out the form below and pay $1 for a 7-day listing
           </p>
+
+          {error && (
+            <div className="bg-red-500/20 border-2 border-red-500 rounded-xl p-4 mb-6">
+              <p className="text-red-200 font-semibold">{error}</p>
+            </div>
+          )}
 
           <div className="space-y-6">
             <div>
@@ -264,9 +300,10 @@ export function CreatePost() {
 
             <button
               onClick={handleSubmit}
-              className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white py-4 rounded-xl font-bold text-lg transition-all transform hover:scale-105 shadow-lg"
+              disabled={submitting}
+              className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white py-4 rounded-xl font-bold text-lg transition-all transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
-              Post for $1 (7 days)
+              {submitting ? 'Redirecting to Stripe...' : 'Post for $1 (7 days)'}
             </button>
 
             <p className="text-center text-gray-400 text-sm">
