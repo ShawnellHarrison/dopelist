@@ -110,7 +110,7 @@ function DopeListApp() {
 
     const query = supabase
       .from('posts')
-      .select('*, city:cities(*), category:categories(*)')
+      .select('*, city:locations(*), category:categories(*)')
       .eq('city_id', selectedCity.id)
       .eq('is_active', true)
       .gt('expires_at', new Date().toISOString())
