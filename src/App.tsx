@@ -599,37 +599,7 @@ function DopeListApp() {
   );
 }
 
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthContext';
-import { Header } from './components/Header';
-import { Home } from './pages/Home';
-import { PostForm } from './pages/PostForm';
-import { PostDetail } from './pages/PostDetail';
-import { Auth } from './pages/Auth';
-import { Pricing } from './pages/Pricing';
-import { CheckoutSuccess } from './pages/CheckoutSuccess';
-
-function App() {
-  return (
-    <AuthProvider>
-      <Router>
-        <div className="min-h-screen bg-gray-50">
-          <Header />
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/post" element={<PostForm />} />
-            <Route path="/post/:id" element={<PostDetail />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/pricing" element={<Pricing />} />
-            <Route path="/checkout/success" element={<CheckoutSuccess />} />
-          </Routes>
-        </div>
-      </Router>
-    </AuthProvider>
-  );
-}
-
-export default function AppWrapper() {
+export default function App() {
   return (
     <AuthProvider>
       <DopeListApp />
