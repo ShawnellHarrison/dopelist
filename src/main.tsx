@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import App from './App.tsx';
 import { CreatePost } from './pages/CreatePost';
 import { SuccessPage } from './pages/SuccessPage';
+import { RenewSuccessPage } from './pages/RenewSuccessPage';
 import { ManagePosts } from './pages/ManagePosts';
 import './index.css';
 
@@ -14,6 +15,7 @@ createRoot(document.getElementById('root')!).render(
         <Route path="/" element={<App />} />
         <Route path="/create-post" element={<CreatePost />} />
         <Route path="/success" element={<SuccessPage />} />
+        <Route path="/renew-success" element={<RenewSuccessPage />} />
         <Route path="/manage" element={<ManagePosts />} />
       </Routes>
     </BrowserRouter>

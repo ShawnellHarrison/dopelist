@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { supabase, getSupabaseUrl } from '../lib/supabase';
 import { Clock, Trash2, RefreshCw, Edit, ArrowLeft, X, Bookmark } from 'lucide-react';
 import { formatTimeLeft } from '../lib/constants';
+import { EditPostModal } from '../components/EditPostModal';
 
 interface Post {
   id: string;
@@ -29,6 +30,8 @@ export function ManagePosts() {
   const [loading, setLoading] = useState(true);
   const [deviceToken, setDeviceToken] = useState<string | null>(null);
   const [showBookmarkTip, setShowBookmarkTip] = useState(false);
+  const [editingPostId, setEditingPostId] = useState<string | null>(null);
+  const [renewingPostId, setRenewingPostId] = useState<string | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem('device_token');
@@ -82,7 +85,58 @@ export function ManagePosts() {
 
   const handleRenew = async (postId: string) => {
     if (!confirm('Renew this post for another 7 days? ($1 fee applies)')) return;
-    alert('Renewal feature will redirect to payment.');
+
+    setRenewingPostId(postId);
+
+    try {
+      if (!supabase) return;
+
+      const STRIPE_POST_PRICE_ID = import.meta.env.VITE_STRIPE_POST_PRICE_ID;
+
+      if (!STRIPE_POST_PRICE_ID) {
+        alert('Stripe configuration missing. Please contact support.');
+        return;
+      }
+
+      const session = await supabase.auth.getSession();
+      const token = session.data.session?.access_token;
+
+      if (!token) {
+        alert('Please log in to renew posts');
+        return;
+      }
+
+      const checkoutUrl = `${getSupabaseUrl()}/functions/v1/stripe-checkout`;
+      const response = await fetch(checkoutUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          price_id: STRIPE_POST_PRICE_ID,
+          mode: 'payment',
+          success_url: `${window.location.origin}/renew-success?post_id=${postId}`,
+          cancel_url: `${window.location.origin}/manage`,
+          metadata: {
+            post_id: postId,
+            action: 'renew',
+          },
+        }),
+      });
+
+      const data = await response.json();
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      window.location.href = data.url;
+    } catch (err: any) {
+      console.error('Error creating renewal checkout:', err);
+      alert(err.message || 'Failed to create payment session');
+    } finally {
+      setRenewingPostId(null);
+    }
   };
 
   const handleDelete = async (postId: string) => {
@@ -239,11 +293,19 @@ export function ManagePosts() {
                       </div>
                       <div className="flex gap-2 mt-4">
                         <button
-                          onClick={() => handleRenew(post.id)}
-                          className="flex items-center gap-2 px-4 py-2 bg-green-600/20 hover:bg-green-600/30 text-green-400 rounded-lg font-semibold transition-colors text-sm"
+                          onClick={() => setEditingPostId(post.id)}
+                          className="flex items-center gap-2 px-4 py-2 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 rounded-lg font-semibold transition-colors text-sm"
                         >
-                          <RefreshCw size={16} />
-                          Renew 7 Days
+                          <Edit size={16} />
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleRenew(post.id)}
+                          disabled={renewingPostId === post.id}
+                          className="flex items-center gap-2 px-4 py-2 bg-green-600/20 hover:bg-green-600/30 text-green-400 rounded-lg font-semibold transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <RefreshCw size={16} className={renewingPostId === post.id ? 'animate-spin' : ''} />
+                          {renewingPostId === post.id ? 'Processing...' : 'Renew 7 Days'}
                         </button>
                         <button
                           onClick={() => handleDelete(post.id)}
@@ -294,6 +356,14 @@ export function ManagePosts() {
           )}
         </div>
       </div>
+
+      {editingPostId && (
+        <EditPostModal
+          postId={editingPostId}
+          onClose={() => setEditingPostId(null)}
+          onSuccess={loadPosts}
+        />
+      )}
     </div>
   );
 }

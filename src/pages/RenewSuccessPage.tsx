@@ -3,58 +3,32 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { CheckCircle, AlertCircle } from 'lucide-react';
 import { supabase, getSupabaseUrl } from '../lib/supabase';
 
-export function SuccessPage() {
+export function RenewSuccessPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [status, setStatus] = useState<'processing' | 'success' | 'error'>('processing');
   const [error, setError] = useState('');
-  const [postData, setPostData] = useState<{ cityId: string; categoryId: string } | null>(null);
 
   useEffect(() => {
-    createPost();
+    processRenewal();
   }, []);
 
-  const handleViewPost = async () => {
-    if (!postData || !supabase) {
-      navigate('/');
-      return;
-    }
-
-    try {
-      const { data: category } = await supabase
-        .from('categories')
-        .select('section')
-        .eq('id', postData.categoryId)
-        .single();
-
-      if (category) {
-        navigate(`/?city=${postData.cityId}&section=${category.section}`);
-      } else {
-        navigate('/');
-      }
-    } catch {
-      navigate('/');
-    }
-  };
-
-  const createPost = async () => {
+  const processRenewal = async () => {
     try {
       const sessionId = searchParams.get('session_id');
+      const postId = searchParams.get('post_id');
 
       if (!sessionId) {
-        setError('Payment session not found. Please complete payment first.');
+        setError('Missing payment session ID');
         setStatus('error');
         return;
       }
 
-      const draftData = localStorage.getItem('pendingPost');
-      if (!draftData) {
-        setError('No post data found. Please try creating your post again.');
+      if (!postId) {
+        setError('Missing post ID');
         setStatus('error');
         return;
       }
-
-      const draft = JSON.parse(draftData);
 
       if (!supabase) {
         setError('Database connection not available');
@@ -71,69 +45,29 @@ export function SuccessPage() {
         return;
       }
 
-      let imageUrls: string[] = [];
-      if (draft.images && draft.images.length > 0) {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) throw new Error('User not found');
-
-        imageUrls = await Promise.all(
-          draft.images.map(async (dataUrl: string, index: number) => {
-            const response = await fetch(dataUrl);
-            const blob = await response.blob();
-            const fileName = `${Date.now()}_${index}.jpg`;
-            const filePath = `${user.id}/${fileName}`;
-
-            const { error: uploadError } = await supabase.storage
-              .from('post-images')
-              .upload(filePath, blob);
-
-            if (uploadError) throw uploadError;
-
-            const { data: urlData } = supabase.storage
-              .from('post-images')
-              .getPublicUrl(filePath);
-
-            return urlData.publicUrl;
-          })
-        );
-      }
-
-      const postPayload = {
-        cityId: draft.cityId,
-        categoryId: draft.categoryId,
-        title: draft.title,
-        description: draft.description,
-        price: draft.price || null,
-        location: draft.location || '',
-        images: imageUrls,
-        contactInfo: draft.contactInfo || {},
-      };
-
-      const verifyUrl = `${getSupabaseUrl()}/functions/v1/verify-payment-create-post`;
-      const response = await fetch(verifyUrl, {
+      const renewUrl = `${getSupabaseUrl()}/functions/v1/renew-post`;
+      const response = await fetch(renewUrl, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          postId,
           sessionId,
-          postData: postPayload,
         }),
       });
 
       const data = await response.json();
 
       if (data.error || !data.post) {
-        throw new Error(data.error || 'Failed to create post');
+        throw new Error(data.error || 'Failed to renew post');
       }
 
-      setPostData({ cityId: draft.cityId, categoryId: draft.categoryId });
-      localStorage.removeItem('pendingPost');
       setStatus('success');
     } catch (err: any) {
-      console.error('Error creating post:', err);
-      setError(err.message || 'Failed to create post');
+      console.error('Error processing renewal:', err);
+      setError(err.message || 'Failed to process renewal');
       setStatus('error');
     }
   };
@@ -143,7 +77,7 @@ export function SuccessPage() {
       <div className="min-h-screen bg-gradient-to-br from-black via-purple-950 to-black flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-yellow-400 mx-auto mb-4"></div>
-          <p className="text-white text-lg">Publishing your post...</p>
+          <p className="text-white text-lg">Processing renewal...</p>
         </div>
       </div>
     );
@@ -158,15 +92,15 @@ export function SuccessPage() {
               <AlertCircle className="h-12 w-12 text-red-400" />
             </div>
 
-            <h2 className="text-3xl font-black text-white mb-4">Error</h2>
+            <h2 className="text-3xl font-black text-white mb-4">Renewal Failed</h2>
 
             <p className="text-gray-300 mb-8">{error}</p>
 
             <button
-              onClick={() => navigate('/create-post')}
+              onClick={() => navigate('/manage')}
               className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white py-3 rounded-xl font-bold transition-all"
             >
-              Try Again
+              Back to Manage Posts
             </button>
           </div>
         </div>
@@ -182,30 +116,26 @@ export function SuccessPage() {
             <CheckCircle className="h-12 w-12 text-green-400" />
           </div>
 
-          <h2 className="text-3xl font-black text-white mb-4">Post Live!</h2>
+          <h2 className="text-3xl font-black text-white mb-4">Post Renewed!</h2>
 
           <p className="text-gray-300 mb-8">
-            Your post is now visible and will remain active for 7 days.
+            Your post has been renewed for another 7 days and is now active again.
           </p>
 
           <div className="space-y-3">
             <button
-              onClick={handleViewPost}
+              onClick={() => navigate('/manage')}
               className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-black py-3 rounded-xl font-bold transition-all"
             >
-              View Your Post
+              View Your Posts
             </button>
             <button
-              onClick={() => navigate('/manage')}
+              onClick={() => navigate('/')}
               className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white py-3 rounded-xl font-bold transition-all"
             >
-              Manage Your Posts
+              Back to Home
             </button>
           </div>
-
-          <p className="text-gray-400 text-sm mt-6 text-center">
-            Bookmark /manage to quickly find your posts later
-          </p>
         </div>
       </div>
     </div>
