@@ -18,7 +18,7 @@ export function HomePage() {
             <span className="text-blue-600">All-Mighty DopeList</span>
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            The master network of city-based classifieds. Command your search with authority and trust.
+            The master network of city-based classifieds. Browse with authority and trust.
             Access powerful features and premium listings across all cities.
           </p>
 

@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
-  Search,
   Plus,
   MapPin,
   LogOut,
@@ -33,7 +32,6 @@ function DopeListApp() {
   const [selectedCity, setSelectedCity] = useState<City | null>(null);
   const [selectedSection, setSelectedSection] = useState<Section | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
 
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<'signin' | 'upgrade'>('signin');
@@ -223,27 +221,18 @@ function DopeListApp() {
   }, [categories, selectedSection]);
 
   const filteredPosts = useMemo(() => {
-    if (!searchQuery.trim()) return posts;
-    const q = searchQuery.toLowerCase();
-    return posts.filter(
-      (p) =>
-        p.title.toLowerCase().includes(q) ||
-        p.description.toLowerCase().includes(q) ||
-        p.location.toLowerCase().includes(q)
-    );
-  }, [posts, searchQuery]);
+    return posts;
+  }, [posts]);
 
   const handleCitySelect = (city: City) => {
     setSelectedCity(city);
     setSelectedSection(null);
     setSelectedCategory(null);
-    setSearchQuery('');
   };
 
   const handleSectionSelect = (section: Section) => {
     setSelectedSection(section);
     setSelectedCategory(null);
-    setSearchQuery('');
   };
 
   if (loading) {
@@ -373,19 +362,6 @@ function DopeListApp() {
                 )}
               </div>
             </div>
-
-            {selectedCity && (
-              <div className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                <input
-                  type="text"
-                  placeholder="Search listings..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-12 pr-4 py-4 bg-white/10 backdrop-blur-md border-2 border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/50 transition-all font-medium"
-                />
-              </div>
-            )}
           </div>
         </header>
 
@@ -663,7 +639,7 @@ function DopeListApp() {
                 <div className="text-center py-20">
                   <div className="text-6xl mb-4">🔍</div>
                   <p className="text-white text-xl font-bold mb-2">No listings found</p>
-                  <p className="text-gray-400 mb-6">Try a different category or search term</p>
+                  <p className="text-gray-400 mb-6">Try browsing a different category</p>
                   <button
                     onClick={() => navigate('/create-post')}
                     className="text-yellow-400 hover:text-yellow-300 font-bold underline underline-offset-4 transition-colors text-lg"
