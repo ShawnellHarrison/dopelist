@@ -38,6 +38,46 @@ Deno.serve(async (req: Request) => {
 
     const { sessionId, postData } = await req.json();
 
+    if (!sessionId || !postData) {
+      return new Response(
+        JSON.stringify({ error: 'Missing required data' }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    if (!postData.cityId || !postData.categoryId || !postData.title || !postData.description) {
+      return new Response(
+        JSON.stringify({ error: 'Missing required post fields' }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    if (postData.title.length > 200 || postData.description.length > 5000) {
+      return new Response(
+        JSON.stringify({ error: 'Post data exceeds length limits' }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    if (postData.images && postData.images.length > 10) {
+      return new Response(
+        JSON.stringify({ error: 'Too many images' }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
     // Check if session was already used
     const { data: existingPost } = await supabase
       .from('posts')
@@ -104,10 +144,14 @@ Deno.serve(async (req: Request) => {
       .single();
 
     if (error) {
+      const errorMessage = error.code === '23505'
+        ? 'Payment session already used'
+        : error.message;
+
       return new Response(
-        JSON.stringify({ error: error.message }),
+        JSON.stringify({ error: errorMessage }),
         {
-          status: 500,
+          status: error.code === '23505' ? 400 : 500,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         }
       );

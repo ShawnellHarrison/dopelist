@@ -55,6 +55,23 @@ Deno.serve(async (req: Request) => {
       );
     }
 
+    const { data: existingRenewal } = await supabase
+      .from('posts')
+      .select('id')
+      .eq('stripe_session_id', sessionId)
+      .neq('id', postId)
+      .maybeSingle();
+
+    if (existingRenewal) {
+      return new Response(
+        JSON.stringify({ error: 'Payment session already used' }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
     let paymentIntentId = sessionId;
 
     if (stripeSecretKey && !sessionId.startsWith('demo_')) {
@@ -85,16 +102,22 @@ Deno.serve(async (req: Request) => {
       .update({
         expires_at: newExpiresAt.toISOString(),
         is_active: true,
+        stripe_session_id: sessionId,
+        stripe_payment_id: paymentIntentId,
       })
       .eq('id', postId)
       .select()
       .single();
 
     if (updateError) {
+      const errorMessage = updateError.code === '23505'
+        ? 'Payment session already used'
+        : updateError.message;
+
       return new Response(
-        JSON.stringify({ error: updateError.message }),
+        JSON.stringify({ error: errorMessage }),
         {
-          status: 500,
+          status: updateError.code === '23505' ? 400 : 500,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         }
       );

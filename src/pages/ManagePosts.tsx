@@ -28,27 +28,13 @@ export function ManagePosts() {
   const navigate = useNavigate();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
-  const [deviceToken, setDeviceToken] = useState<string | null>(null);
   const [showBookmarkTip, setShowBookmarkTip] = useState(false);
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [renewingPostId, setRenewingPostId] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('device_token');
-    if (!token) {
-      const newToken = crypto.randomUUID();
-      localStorage.setItem('device_token', newToken);
-      setDeviceToken(newToken);
-    } else {
-      setDeviceToken(token);
-    }
+    loadPosts();
   }, []);
-
-  useEffect(() => {
-    if (deviceToken) {
-      loadPosts();
-    }
-  }, [deviceToken]);
 
   useEffect(() => {
     const hasSeenTip = localStorage.getItem('manage_bookmark_tip_shown');
@@ -58,7 +44,7 @@ export function ManagePosts() {
   }, [posts]);
 
   const loadPosts = async () => {
-    if (!supabase || !deviceToken) return;
+    if (!supabase) return;
 
     try {
       const { data: { user } } = await supabase.auth.getUser();

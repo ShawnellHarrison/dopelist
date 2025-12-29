@@ -67,6 +67,13 @@ export function EditPostModal({ postId, onClose, onSuccess }: EditPostModalProps
 
       if (postRes.data) {
         const post = postRes.data;
+
+        if (!post.is_active || new Date(post.expires_at) <= new Date()) {
+          setError('This post has expired and cannot be edited. Please renew it first.');
+          setLoading(false);
+          return;
+        }
+
         setCityId(post.city_id);
         setCategoryId(post.category_id);
         setTitle(post.title);
@@ -108,6 +115,22 @@ export function EditPostModal({ postId, onClose, onSuccess }: EditPostModalProps
 
     if (!description.trim()) {
       setError('Please enter a description');
+      return;
+    }
+
+    if (title.length > 200) {
+      setError('Title must be 200 characters or less');
+      return;
+    }
+
+    if (description.length > 5000) {
+      setError('Description must be 5000 characters or less');
+      return;
+    }
+
+    const totalImages = existingImages.length + newImages.length;
+    if (totalImages > 10) {
+      setError('Maximum 10 images allowed');
       return;
     }
 

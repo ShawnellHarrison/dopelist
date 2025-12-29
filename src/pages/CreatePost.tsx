@@ -110,6 +110,24 @@ export function CreatePost() {
       return;
     }
 
+    if (title.length > 200) {
+      setError('Title must be 200 characters or less');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    if (description.length > 5000) {
+      setError('Description must be 5000 characters or less');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    if (images.length > 10) {
+      setError('Maximum 10 images allowed');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
     setSubmitting(true);
 
     try {

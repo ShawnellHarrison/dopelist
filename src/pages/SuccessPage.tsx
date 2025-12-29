@@ -56,6 +56,15 @@ export function SuccessPage() {
 
       const draft = JSON.parse(draftData);
 
+      const draftAge = Date.now() - (draft.createdAt || 0);
+      const maxAge = 60 * 60 * 1000;
+      if (draftAge > maxAge) {
+        setError('Post data expired. Please create your post again.');
+        setStatus('error');
+        localStorage.removeItem('pendingPost');
+        return;
+      }
+
       if (!supabase) {
         setError('Database connection not available');
         setStatus('error');
