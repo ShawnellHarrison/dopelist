@@ -177,7 +177,7 @@ export function CreatePost() {
               body: JSON.stringify({
                 price_id: STRIPE_POST_PRICE_ID,
                 mode: 'payment',
-                success_url: `${window.location.origin}/success`,
+                success_url: `${window.location.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
                 cancel_url: `${window.location.origin}/create-post`,
               }),
             });
@@ -201,7 +201,7 @@ export function CreatePost() {
             body: JSON.stringify({
               price_id: STRIPE_POST_PRICE_ID,
               mode: 'payment',
-              success_url: `${window.location.origin}/success`,
+              success_url: `${window.location.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
               cancel_url: `${window.location.origin}/create-post`,
             }),
           });
